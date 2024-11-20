@@ -6,7 +6,7 @@
     },
     "version": "0.4.5",
     "description": "Three.js-based 3D Gaussian splat viewer",
-    "module": "build/gaussian-splats-3d.module.js",
+    "module": "src/index.js",
     "main": "build/gaussian-splats-3d.umd.cjs",
     "author": "Mark Kellogg",
     "license": "MIT",
@@ -68,11 +68,5 @@
     },
     "peerDependencies": {
         "three": ">=0.160.0"
-    },
-    "files": [
-        "build/gaussian-splats-3d.umd.cjs",
-        "build/gaussian-splats-3d.umd.cjs.map",
-        "build/gaussian-splats-3d.module.js",
-        "build/gaussian-splats-3d.module.js.map"
-    ]
+    }
 }
