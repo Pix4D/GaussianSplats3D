@@ -15272,6 +15272,31 @@ class Viewer {
     };
   })();
 
+  /*
+  Proposed functionality for the interaction with the splats
+  The camera is the persepective camera used to render
+  The mousePosition parameter is the normalised position of the mouse
+  relative to the screen.
+
+  Uses the raycaster to traverse to the different splats to check
+  collisions with the ray and decide which one to use.
+  */
+  unprojectPositionFromSplats(camera, mousePosition) {
+    const renderDimensions = new THREE.Vector2();
+    const outHits = [];
+    this.raycaster.setFromCameraAndScreenPosition(
+      camera,
+      mousePosition,
+      renderDimensions,
+    );
+    this.raycaster.intersectSplatMesh(this.splatMesh, outHits);
+    if (outHits.length > 0) {
+      const hit = outHits[0];
+      return hit.origin;
+    }
+    return null;
+  }
+
   getRenderDimensions(outDimensions) {
     if (this.rootElement) {
       outDimensions.x = this.rootElement.offsetWidth;
@@ -17232,6 +17257,17 @@ class DropInViewer extends THREE.Group {
       this.add(this.viewer.splatMesh);
     }
   }
+
+   /*
+  Proposed functionality for the interaction with the splats
+  The camera is the persepective camera used to render
+  The mousePosition parameter is the normalised position of the mouse
+  relative to the screen.
+  */
+  unprojectPositionFromSplats(camera, mousePosition) {
+    return this.viewer.unprojectSplatPosition(camera, mousePosition);
+  }
+  
 
   /**
    * Add a single splat scene to the viewer.

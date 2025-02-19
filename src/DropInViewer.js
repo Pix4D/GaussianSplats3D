@@ -43,6 +43,16 @@ export class DropInViewer extends THREE.Group {
     }
   }
 
+  /*
+  Proposed functionality for the interaction with the splats
+  The camera is the persepective camera used to render
+  The mousePosition parameter is the normalised position of the mouse
+  relative to the screen.
+  */
+  unprojectPositionFromSplats(camera, mousePosition) {
+    return this.viewer.unprojectSplatPosition(camera, mousePosition);
+  }
+
   /**
    * Add a single splat scene to the viewer.
    * @param {string} path Path to splat scene to be loaded
