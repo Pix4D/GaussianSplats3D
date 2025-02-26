@@ -15336,15 +15336,15 @@
     })();
 
     /*
-    * Uses the raycaster to traverse the different splats and checks for collisions.
-    *
-    * @param {object} camera is the perspective camera used to render
-    * @param {object} position is the normalized position relative to the screen.
-    * @param {object} screenSize
-    * @returns {object|null} the first splat that collides with the ray.
-    */
+     * Uses the raycaster to traverse the different splats and checks for collisions.
+     *
+     * @param {object} camera is the perspective camera used to render
+     * @param {object} position is the normalized position relative to the screen.
+     * @param {object} screenSize
+     * @returns {object|null} the first splat that collides with the ray.
+     */
     getSplatPosition = (function() {
-      return function (renderDimensions, camera, position) {
+      return function(renderDimensions, camera, position) {
         const outHits = [];
         this.raycaster.setFromCameraAndScreenPosition(
           camera,
@@ -15357,8 +15357,8 @@
           return hit;
         }
         return null;
-      }
-    })()
+      };
+    })();
 
     getRenderDimensions(outDimensions) {
       if (this.rootElement) {
@@ -17321,17 +17321,17 @@
     }
 
     /*
-    * Modifies the uniforms of the shader to render the splats reflecting their
-    * ids, it also removes the transparency mode.
-    * @param {status} boolean value used to set if the shader renders IDs or the splats in regular mode
-    */
+     * Modifies the uniforms of the shader to render the splats reflecting their
+     * ids, it also removes the transparency mode.
+     * @param {status} boolean value used to set if the shader renders IDs or the splats in regular mode
+     */
     setupIDMode = (function() {
       return function(status) {
         if (this.splatMesh !== null) {
           this.splatMesh.setupIDMode(status);
         }
-      }
-    })()
+      };
+    })();
 
     /**
      * Add a single splat scene to the viewer.
@@ -17410,19 +17410,19 @@
     }
 
     /*
-    * Uses the raycaster to traverse the different splats and checks for collisions.
-    *
-    * @param {object} camera is the perspective camera used to render
-    * @param {object} position is the normalized position relative to the screen.
-    * @param {object} screenSize
-    * @returns {object|null} the first splat that collides with the ray.
-    */
+     * Uses the raycaster to traverse the different splats and checks for collisions.
+     *
+     * @param {object} camera is the perspective camera used to render
+     * @param {object} position is the normalized position relative to the screen.
+     * @param {object} screenSize
+     * @returns {object|null} the first splat that collides with the ray.
+     */
     getSplatPosition = (function() {
       return function(rendererSize, camera, position) {
         return this.viewer.getSplatPosition(rendererSize, camera, position);
-      }
+      };
     })();
-    
+
     async dispose() {
       return await this.viewer.dispose();
     }
