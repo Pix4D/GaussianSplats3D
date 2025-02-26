@@ -345,13 +345,6 @@ export class Viewer {
     this.unprojectMousePosition = this.unprojectPositionFromSplats.bind(this);
 
     if (!this.dropInMode) this.init();
-
-    this.IDRenderTarget = new THREE.WebGLRenderTarget(1, 1, {
-      minFilter: THREE.NearestFilter,
-      magFilter: THREE.NearestFilter,
-      format: THREE.RedFormat,
-      type: THREE.FloatType,
-    });
   }
 
   createSplatMesh() {
@@ -406,10 +399,6 @@ export class Viewer {
     this.infoPanel.setContainer(this.rootElement);
 
     this.initialized = true;
-
-    let mat = new THREE.MeshNormalMaterial();
-    let sphere = new THREE.SphereGeometry(0.1);
-    this.sphereMesh = new THREE.Mesh(sphere, mat);
   }
 
   setupCamera() {
@@ -664,24 +653,6 @@ export class Viewer {
 
   onMouseMove(mouse) {
     this.mousePosition.set(mouse.offsetX, mouse.offsetY);
-    this.splatMesh.add(this.sphereMesh);
-
-    // Read the window-space depth from the depth render target.
-    const rgba = new Float32Array(4);
-    this.renderer.readRenderTargetPixels(
-      this.IDRenderTarget,
-      this.mousePosition.x,
-      this.renderer.domElement.height - this.mousePosition.y,
-      1,
-      1,
-      rgba,
-    );
-    const ID = rgba[0];
-
-    let center = new THREE.Vector3();
-    this.splatMesh.getSplatCenter(ID, center);
-
-    this.sphereMesh.position.copy(center);
   }
 
   onMouseDown() {
@@ -2100,23 +2071,6 @@ export class Viewer {
         }
         return false;
       };
-
-      // Resize the render target to match dimensions of the screen
-      let h = this.renderer.domElement.height || 1;
-      let w = this.renderer.domElement.width || 1;
-      this.IDRenderTarget.setSize(w, h);
-
-      // Define the render target where the IDs will be saved
-      let renderTarget = this.renderer.getRenderTarget();
-
-      // Setup the splats to render in ID mode
-      this.splatMesh.setupIDMode(true);
-      this.renderer.setRenderTarget(this.IDRenderTarget);
-      this.renderer.render(this.splatMesh, this.camera);
-
-      // Setup the splats in normal mode
-      this.splatMesh.setupIDMode(false);
-      this.renderer.setRenderTarget(renderTarget);
 
       const savedAuoClear = this.renderer.autoClear;
       if (hasRenderables(this.threeScene)) {
