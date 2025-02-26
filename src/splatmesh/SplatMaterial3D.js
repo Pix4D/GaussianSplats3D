@@ -294,28 +294,6 @@ export class SplatMaterial3D {
 
                   float index = float(vSplatIndex);
 
-                  /*
-                    if(screenData.y < 0.5) {
-                      if(screenData.x < 0.5) {
-                        index = 7.;
-                      } else {
-                        index = 10903.;
-                      }
-                    } else {
-                      if(screenData.x < 0.5) {
-                        index = 1485903.;
-                      } else {
-                        index = 15892345.;
-                      }
-                    }
-                
-                    index /= pow(256., 3.);
-
-                    vec4 enc = vec4(1.0, 255.0, 65025.0, 16581375.0) * index;
-                    enc = fract(enc);
-                    enc -= enc.yzww * vec4(1.0/255.0,1.0/255.0,1.0/255.0,0.0);
-                  */
-
                   gl_FragColor = vec4(index, 0., 0., 1.);
                   return;
 

@@ -9252,28 +9252,6 @@
 
                   float index = float(vSplatIndex);
 
-                  /*
-                    if(screenData.y < 0.5) {
-                      if(screenData.x < 0.5) {
-                        index = 7.;
-                      } else {
-                        index = 10903.;
-                      }
-                    } else {
-                      if(screenData.x < 0.5) {
-                        index = 1485903.;
-                      } else {
-                        index = 15892345.;
-                      }
-                    }
-                
-                    index /= pow(256., 3.);
-
-                    vec4 enc = vec4(1.0, 255.0, 65025.0, 16581375.0) * index;
-                    enc = fract(enc);
-                    enc -= enc.yzww * vec4(1.0/255.0,1.0/255.0,1.0/255.0,0.0);
-                  */
-
                   gl_FragColor = vec4(index, 0., 0., 1.);
                   return;
 
@@ -14990,10 +14968,7 @@
       this.fetch = options.fetch || ((url, opts) => fetch(url, opts));
       this.fetchWithProgress = makeProgressiveFetchFunction(this.fetch);
 
-      this.unprojectMousePosition = this.unprojectPositionFromSplats.bind(this);
-
       if (!this.dropInMode) this.init();
-
     }
 
     createSplatMesh() {
@@ -15361,30 +15336,29 @@
     })();
 
     /*
-    Proposed functionality for the interaction with the splats
-    The camera is the persepective camera used to render
-    The mousePosition parameter is the normalised position of the mouse
-    relative to the screen.
-
-    Uses the raycaster to traverse to the different splats to check
-    collisions with the ray and decide which one to use.
+    * Uses the raycaster to traverse the different splats and checks for collisions.
+    *
+    * @param {object} camera is the perspective camera used to render
+    * @param {object} position is the normalized position relative to the screen.
+    * @param {object} screenSize
+    * @returns {object|null} the first splat that collides with the ray.
     */
-    unprojectPositionFromSplats(renderer, camera, mousePosition) {
-      const renderDimensions = new THREE__namespace.Vector2();
-      const outHits = [];
-      renderer.getSize(renderDimensions);
-      this.raycaster.setFromCameraAndScreenPosition(
-        camera,
-        mousePosition,
-        renderDimensions,
-      );
-      this.raycaster.intersectSplatMesh(this.splatMesh, outHits);
-      if (outHits.length > 0) {
-        const hit = outHits[0];
-        return hit;
+    getSplatPosition = (function() {
+      return function (renderDimensions, camera, position) {
+        const outHits = [];
+        this.raycaster.setFromCameraAndScreenPosition(
+          camera,
+          position,
+          renderDimensions,
+        );
+        this.raycaster.intersectSplatMesh(this.splatMesh, outHits);
+        if (outHits.length > 0) {
+          const hit = outHits[0];
+          return hit;
+        }
+        return null;
       }
-      return null;
-    }
+    })()
 
     getRenderDimensions(outDimensions) {
       if (this.rootElement) {
@@ -17331,10 +17305,6 @@
         this.viewer,
       );
 
-      this.unprojectMousePosition = this.unprojectPositionFromSplats.bind(this);
-
-      this.setupIDMode = this.setupIDMeshMode.bind(this);
-
       this.viewer.onSplatMeshChanged(() => {
         this.updateSplatMesh();
       });
@@ -17350,11 +17320,18 @@
       }
     }
 
-    setupIDMeshMode(status) {
-      if (this.splatMesh !== null) {
-        this.splatMesh.setupIDMode(status);
+    /*
+    * Modifies the uniforms of the shader to render the splats reflecting their
+    * ids, it also removes the transparency mode.
+    * @param {status} boolean value used to set if the shader renders IDs or the splats in regular mode
+    */
+    setupIDMode = (function() {
+      return function(status) {
+        if (this.splatMesh !== null) {
+          this.splatMesh.setupIDMode(status);
+        }
       }
-    }
+    })()
 
     /**
      * Add a single splat scene to the viewer.
@@ -17433,15 +17410,19 @@
     }
 
     /*
-    Proposed functionality for the interaction with the splats
-    The camera is the persepective camera used to render
-    The mousePosition parameter is the normalised position of the mouse
-    relative to the screen.
+    * Uses the raycaster to traverse the different splats and checks for collisions.
+    *
+    * @param {object} camera is the perspective camera used to render
+    * @param {object} position is the normalized position relative to the screen.
+    * @param {object} screenSize
+    * @returns {object|null} the first splat that collides with the ray.
     */
-    unprojectPositionFromSplats(renderer, camera, mousePosition) {
-      return this.viewer.unprojectMousePosition(renderer, camera, mousePosition);
-    }
-
+    getSplatPosition = (function() {
+      return function(rendererSize, camera, position) {
+        return this.viewer.getSplatPosition(rendererSize, camera, position);
+      }
+    })();
+    
     async dispose() {
       return await this.viewer.dispose();
     }
