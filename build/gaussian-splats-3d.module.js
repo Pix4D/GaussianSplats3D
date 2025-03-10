@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { Ray as Ray$1, Plane, MathUtils, EventDispatcher, Vector3, MOUSE, TOUCH, Quaternion, Spherical, Vector2 } from 'three';
-import { getGPUTier } from 'detect-gpu';
 
 /**
  * AbortablePromise: A quick & dirty wrapper for JavaScript's Promise class that allows the underlying
@@ -7781,29 +7780,12 @@ const SplatRenderMode = {
 };
 
 class GLTFParser {
-  constructor() {}
+  constructor(degree) {
+    this.degree = degree;
+  }
 
-  async decodeSplatData(splatCount, splatBuffers, shBuffers) {
-    const gpuTier = await getGPUTier();
-
-    // Mobile devices will not show spherical harmonics for now.
-    let degree = 0;
-
-    // Desktop can either show 1 or 2 harmonic degrees depending on
-    // the hardware present.
-    if (!gpuTier.isMobile) {
-      switch (gpuTier.tier) {
-        case 2:
-          degree = 1;
-          break;
-        case 3:
-          degree = 2;
-          break;
-      }
-    }
-    const shDegree = degree;
-
-    console.log("the degree is : " + degree);
+  decodeSplatData(splatCount, splatBuffers, shBuffers) {
+    const shDegree = this.degree;
 
     const splatArray = new UncompressedSplatArray(shDegree);
 
@@ -7915,8 +7897,8 @@ class GLTFParser {
     };
   })();
 
-  async parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers) {
-    return await this.decodeSplatData(splatCount, splatBuffers, shBuffers);
+  parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers) {
+    return this.decodeSplatData(splatCount, splatBuffers, shBuffers);
   }
 }
 
@@ -8066,11 +8048,9 @@ class GLTFLoader {
 
   async loadFromBufferData(splatCount, splatBuffers, shBuffers = []) {
     return delayedExecute(() =>
-      new GLTFParser().parseToUncompressedSplatArray(
-        splatCount,
-        splatBuffers,
-        shBuffers,
-      ),
+      new GLTFParser(
+        this.viewer.sphericalHarmonicsDegree,
+      ).parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers),
     ).then(finalize);
   }
 }
@@ -14812,6 +14792,9 @@ class Viewer {
     // Degree of spherical harmonics to utilize in rendering splats (assuming the data is present in the splat scene).
     // Valid values are 0 - 2. Default value is 0.
     this.sphericalHarmonicsDegree = options.sphericalHarmonicsDegree || 0;
+    console.log(
+      'The spherical harmonics degree is: ' + this.sphericalHarmonicsDegree,
+    );
 
     // When true, allows for usage of extra properties and attributes during rendering for effects such as opacity adjustment.
     // Default is false for performance reasons. These properties are separate from transform properties (scale, rotation, position)

@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three'), require('detect-gpu')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'three', 'detect-gpu'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global["Gaussian Splats 3D"] = global["Gaussian Splats 3D"] || {}, global.THREE, global.detectGpu));
-})(this, (function (exports, THREE, detectGpu) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global["Gaussian Splats 3D"] = global["Gaussian Splats 3D"] || {}, global.THREE));
+})(this, (function (exports, THREE) { 'use strict';
 
   function _interopNamespaceDefault(e) {
     var n = Object.create(null);
@@ -7802,29 +7802,12 @@
   };
 
   class GLTFParser {
-    constructor() {}
+    constructor(degree) {
+      this.degree = degree;
+    }
 
-    async decodeSplatData(splatCount, splatBuffers, shBuffers) {
-      const gpuTier = await detectGpu.getGPUTier();
-
-      // Mobile devices will not show spherical harmonics for now.
-      let degree = 0;
-
-      // Desktop can either show 1 or 2 harmonic degrees depending on
-      // the hardware present.
-      if (!gpuTier.isMobile) {
-        switch (gpuTier.tier) {
-          case 2:
-            degree = 1;
-            break;
-          case 3:
-            degree = 2;
-            break;
-        }
-      }
-      const shDegree = degree;
-
-      console.log("the degree is : " + degree);
+    decodeSplatData(splatCount, splatBuffers, shBuffers) {
+      const shDegree = this.degree;
 
       const splatArray = new UncompressedSplatArray(shDegree);
 
@@ -7936,8 +7919,8 @@
       };
     })();
 
-    async parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers) {
-      return await this.decodeSplatData(splatCount, splatBuffers, shBuffers);
+    parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers) {
+      return this.decodeSplatData(splatCount, splatBuffers, shBuffers);
     }
   }
 
@@ -8087,11 +8070,9 @@
 
     async loadFromBufferData(splatCount, splatBuffers, shBuffers = []) {
       return delayedExecute(() =>
-        new GLTFParser().parseToUncompressedSplatArray(
-          splatCount,
-          splatBuffers,
-          shBuffers,
-        ),
+        new GLTFParser(
+          this.viewer.sphericalHarmonicsDegree,
+        ).parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers),
       ).then(finalize);
     }
   }
@@ -14833,6 +14814,9 @@
       // Degree of spherical harmonics to utilize in rendering splats (assuming the data is present in the splat scene).
       // Valid values are 0 - 2. Default value is 0.
       this.sphericalHarmonicsDegree = options.sphericalHarmonicsDegree || 0;
+      console.log(
+        'The spherical harmonics degree is: ' + this.sphericalHarmonicsDegree,
+      );
 
       // When true, allows for usage of extra properties and attributes during rendering for effects such as opacity adjustment.
       // Default is false for performance reasons. These properties are separate from transform properties (scale, rotation, position)

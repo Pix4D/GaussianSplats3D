@@ -178,6 +178,9 @@ export class Viewer {
     // Degree of spherical harmonics to utilize in rendering splats (assuming the data is present in the splat scene).
     // Valid values are 0 - 2. Default value is 0.
     this.sphericalHarmonicsDegree = options.sphericalHarmonicsDegree || 0;
+    console.log(
+      'The spherical harmonics degree is: ' + this.sphericalHarmonicsDegree,
+    );
 
     // When true, allows for usage of extra properties and attributes during rendering for effects such as opacity adjustment.
     // Default is false for performance reasons. These properties are separate from transform properties (scale, rotation, position)

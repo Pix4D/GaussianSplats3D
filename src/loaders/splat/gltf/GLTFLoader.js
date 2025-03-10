@@ -149,11 +149,9 @@ export class GLTFLoader {
 
   async loadFromBufferData(splatCount, splatBuffers, shBuffers = []) {
     return delayedExecute(() =>
-      new GLTFParser().parseToUncompressedSplatArray(
-        splatCount,
-        splatBuffers,
-        shBuffers,
-      ),
+      new GLTFParser(
+        this.viewer.sphericalHarmonicsDegree,
+      ).parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers),
     ).then(finalize);
   }
 }

@@ -1,33 +1,13 @@
 import { clamp } from '../../../Util';
 import { UncompressedSplatArray } from '../../UncompressedSplatArray';
 import * as THREE from 'three';
-
-import { getGPUTier } from 'detect-gpu';
-
 export class GLTFParser {
-  constructor() {}
+  constructor(degree) {
+    this.degree = degree;
+  }
 
-  async decodeSplatData(splatCount, splatBuffers, shBuffers) {
-    const gpuTier = await getGPUTier();
-
-    // Mobile devices will not show spherical harmonics for now.
-    let degree = 0;
-
-    // Desktop can either show 1 or 2 harmonic degrees depending on
-    // the hardware present.
-    if (!gpuTier.isMobile) {
-      switch (gpuTier.tier) {
-        case 2:
-          degree = 1;
-          break;
-        case 3:
-          degree = 2;
-          break;
-      }
-    }
-    const shDegree = degree;
-
-    console.log('the degree is : ' + degree);
+  decodeSplatData(splatCount, splatBuffers, shBuffers) {
+    const shDegree = this.degree;
 
     const splatArray = new UncompressedSplatArray(shDegree);
 
@@ -139,7 +119,7 @@ export class GLTFParser {
     };
   })();
 
-  async parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers) {
-    return await this.decodeSplatData(splatCount, splatBuffers, shBuffers);
+  parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers) {
+    return this.decodeSplatData(splatCount, splatBuffers, shBuffers);
   }
 }
