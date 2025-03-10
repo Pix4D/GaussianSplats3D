@@ -7846,7 +7846,7 @@
       const SH_C0 = 0.28209479177387814;
 
       return function(splatBuffers, row, shBuffers, shDegree) {
-        const newSplat = UncompressedSplatArray.createSplat(shDegree);
+        const newSplat = UncompressedSplatArray.createSplat(0);
 
         // center
         const positions = splatBuffers.POSITION;
