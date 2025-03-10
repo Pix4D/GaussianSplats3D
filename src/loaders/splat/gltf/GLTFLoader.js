@@ -76,17 +76,29 @@ export class GLTFLoader {
         'rotation',
         'sh_band_0',
       ]);
-      const shBuffers = await this.fetchBuffers(filePaths, [
-        'sh_band_1_0',
-        'sh_band_1_1',
-        'sh_band_1_2',
+
+      let firstBandBuffers = ['sh_band_1_0', 'sh_band_1_1', 'sh_band_1_2'];
+
+      let secondBandBuffers = [
         'sh_band_2_0',
         'sh_band_2_1',
         'sh_band_2_2',
         'sh_band_2_3',
         'sh_band_2_4',
-        // TODO: higher order bands
-      ]);
+      ];
+
+      let bandBuffers = [];
+      let degree = this.viewer.sphericalHarmonicsDegree;
+
+      if (degree >= 1) {
+        bandBuffers.push(...firstBandBuffers);
+      }
+
+      if (degree >= 2) {
+        bandBuffers.push(...secondBandBuffers);
+      }
+
+      const shBuffers = await this.fetchBuffers(filePaths, bandBuffers);
       const splatCount = this.getSplatCountFromGLTF(gltf);
 
       return this.loadFromBufferData(splatCount, splatBuffers, shBuffers);
