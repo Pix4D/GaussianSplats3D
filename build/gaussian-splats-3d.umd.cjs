@@ -7805,16 +7805,14 @@
     constructor() {}
 
     async decodeSplatData(splatCount, splatBuffers, shBuffers) {
-
       const gpuTier = await detectGpu.getGPUTier();
 
-      //Mobile devices will not show spherical harmonics for now.
+      // Mobile devices will not show spherical harmonics for now.
       let degree = 0;
 
-      //Desktop can either show 1 or 2 harmonic degrees depending on
-      //the hardware present.
-      if(!gpuTier.isMobile) {
-
+      // Desktop can either show 1 or 2 harmonic degrees depending on
+      // the hardware present.
+      if (!gpuTier.isMobile) {
         switch (gpuTier.tier) {
           case 2:
             degree = 1;
@@ -7823,7 +7821,6 @@
             degree = 2;
             break;
         }
-
       }
       const shDegree = degree;
 
@@ -7908,8 +7905,8 @@
         newSplat[OFFSET.FDC1] = clamp(Math.floor(newSplat[OFFSET.FDC1]), 0, 255);
         newSplat[OFFSET.FDC2] = clamp(Math.floor(newSplat[OFFSET.FDC2]), 0, 255);
 
-          // first order sh bands
-          if (shDegree >= 1) {
+        // first order sh bands
+        if (shDegree >= 1) {
           for (let i = 0; i < 3; i++) {
             newSplat[OFFSET[`FRC${0 + i}`]] = shBuffers.sh_band_1_0[row * 3 + i];
             newSplat[OFFSET[`FRC${3 + i}`]] = shBuffers.sh_band_1_1[row * 3 + i];
@@ -7930,7 +7927,7 @@
               newSplat[OFFSET[`FRC${21 + i}`]] =
                 shBuffers.sh_band_2_4[row * 3 + i];
             }
-          }          
+          }
         }
 
         return newSplat;
