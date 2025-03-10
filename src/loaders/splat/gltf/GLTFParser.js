@@ -49,7 +49,7 @@ export class GLTFParser {
     const SH_C0 = 0.28209479177387814;
 
     return function(splatBuffers, row, shBuffers, shDegree) {
-      const newSplat = UncompressedSplatArray.createSplat(0);
+      const newSplat = UncompressedSplatArray.createSplat(shDegree);
 
       // center
       const positions = splatBuffers.POSITION;
