@@ -2,13 +2,30 @@ import { clamp } from '../../../Util';
 import { UncompressedSplatArray } from '../../UncompressedSplatArray';
 import * as THREE from 'three';
 
+import { getGPUTier } from 'detect-gpu';
+
 export class GLTFParser {
   constructor() {}
 
-  decodeSplatData(splatCount, splatBuffers, shBuffers) {
-    // cool to determine the spherical harmonics degree based on the length of shBuffers?
-    const shDegree =
-      shBuffers.length === 3 ? 1 : shBuffers.length === 8 ? 2 : 0;
+  async decodeSplatData(splatCount, splatBuffers, shBuffers) {
+    const gpuTier = await getGPUTier();
+
+    // Mobile devices will not show spherical harmonics for now.
+    let degree = 0;
+
+    // Desktop can either show 1 or 2 harmonic degrees depending on
+    // the hardware present.
+    if (!gpuTier.isMobile) {
+      switch (gpuTier.tier) {
+        case 2:
+          degree = 1;
+          break;
+        case 3:
+          degree = 2;
+          break;
+      }
+    }
+    const shDegree = degree;
 
     const splatArray = new UncompressedSplatArray(shDegree);
 
@@ -93,13 +110,25 @@ export class GLTFParser {
 
       // first order sh bands
       if (shDegree >= 1) {
-        for (let i = 0; i < 9; i++) {
-          newSplat[OFFSET[`FRC${i}`]] = shBuffers[row * 3 + i];
+        for (let i = 0; i < 3; i++) {
+          newSplat[OFFSET[`FRC${0 + i}`]] = shBuffers.sh_band_1_0[row * 3 + i];
+          newSplat[OFFSET[`FRC${3 + i}`]] = shBuffers.sh_band_1_1[row * 3 + i];
+          newSplat[OFFSET[`FRC${6 + i}`]] = shBuffers.sh_band_1_2[row * 3 + i];
         }
+
         // second order sh bands
         if (shDegree >= 2) {
-          for (let i = 9; i < 24; i++) {
-            newSplat[OFFSET[`FRC${i}`]] = shBuffers[row * 3 + i];
+          for (let i = 0; i < 3; i++) {
+            newSplat[OFFSET[`FRC${9 + i}`]] =
+              shBuffers.sh_band_2_0[row * 3 + i];
+            newSplat[OFFSET[`FRC${12 + i}`]] =
+              shBuffers.sh_band_2_1[row * 3 + i];
+            newSplat[OFFSET[`FRC${15 + i}`]] =
+              shBuffers.sh_band_2_2[row * 3 + i];
+            newSplat[OFFSET[`FRC${18 + i}`]] =
+              shBuffers.sh_band_2_3[row * 3 + i];
+            newSplat[OFFSET[`FRC${21 + i}`]] =
+              shBuffers.sh_band_2_4[row * 3 + i];
           }
         }
       }
@@ -108,7 +137,7 @@ export class GLTFParser {
     };
   })();
 
-  parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers) {
-    return this.decodeSplatData(splatCount, splatBuffers, shBuffers);
+  async parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers) {
+    return await this.decodeSplatData(splatCount, splatBuffers, shBuffers);
   }
 }

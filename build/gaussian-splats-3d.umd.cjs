@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global["Gaussian Splats 3D"] = global["Gaussian Splats 3D"] || {}, global.THREE));
-})(this, (function (exports, THREE) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three'), require('detect-gpu')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'three', 'detect-gpu'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global["Gaussian Splats 3D"] = global["Gaussian Splats 3D"] || {}, global.THREE, global.detectGpu));
+})(this, (function (exports, THREE, detectGpu) { 'use strict';
 
   function _interopNamespaceDefault(e) {
     var n = Object.create(null);
@@ -1485,9 +1485,9 @@
           const maxShCoeff = this.maxSphericalHarmonicsCoeff;
 
           if (outSphericalHarmonicsDegree >= 1) {
-            set3FromArray(shIn1, dataView, 3, 0, this.compressionLevel);
-            set3FromArray(shIn2, dataView, 3, 1, this.compressionLevel);
-            set3FromArray(shIn3, dataView, 3, 2, this.compressionLevel);
+            set3FromArray(shIn1, dataView, 1, 0, this.compressionLevel);
+            set3FromArray(shIn2, dataView, 1, 3, this.compressionLevel);
+            set3FromArray(shIn3, dataView, 1, 6, this.compressionLevel);
 
             if (transform) {
               toUncompressedFloatArray3(
@@ -1548,11 +1548,11 @@
             );
 
             if (outSphericalHarmonicsDegree >= 2) {
-              set3FromArray(shIn1, dataView, 5, 9, this.compressionLevel);
-              set3FromArray(shIn2, dataView, 5, 10, this.compressionLevel);
-              set3FromArray(shIn3, dataView, 5, 11, this.compressionLevel);
-              set3FromArray(shIn4, dataView, 5, 12, this.compressionLevel);
-              set3FromArray(shIn5, dataView, 5, 13, this.compressionLevel);
+              set3FromArray(shIn1, dataView, 1, 9, this.compressionLevel);
+              set3FromArray(shIn2, dataView, 1, 12, this.compressionLevel);
+              set3FromArray(shIn3, dataView, 1, 15, this.compressionLevel);
+              set3FromArray(shIn4, dataView, 1, 18, this.compressionLevel);
+              set3FromArray(shIn5, dataView, 1, 21, this.compressionLevel);
 
               if (transform) {
                 toUncompressedFloatArray3(
@@ -7804,10 +7804,28 @@
   class GLTFParser {
     constructor() {}
 
-    decodeSplatData(splatCount, splatBuffers, shBuffers) {
-      // cool to determine the spherical harmonics degree based on the length of shBuffers?
-      const shDegree =
-        shBuffers.length === 3 ? 1 : shBuffers.length === 8 ? 2 : 0;
+    async decodeSplatData(splatCount, splatBuffers, shBuffers) {
+
+      const gpuTier = await detectGpu.getGPUTier();
+
+      //Mobile devices will not show spherical harmonics for now.
+      let degree = 0;
+
+      //Desktop can either show 1 or 2 harmonic degrees depending on
+      //the hardware present.
+      if(!gpuTier.isMobile) {
+
+        switch (gpuTier.tier) {
+          case 2:
+            degree = 1;
+            break;
+          case 3:
+            degree = 2;
+            break;
+        }
+
+      }
+      const shDegree = degree;
 
       const splatArray = new UncompressedSplatArray(shDegree);
 
@@ -7890,25 +7908,37 @@
         newSplat[OFFSET.FDC1] = clamp(Math.floor(newSplat[OFFSET.FDC1]), 0, 255);
         newSplat[OFFSET.FDC2] = clamp(Math.floor(newSplat[OFFSET.FDC2]), 0, 255);
 
-        // first order sh bands
-        if (shDegree >= 1) {
-          for (let i = 0; i < 9; i++) {
-            newSplat[OFFSET[`FRC${i}`]] = shBuffers[row * 3 + i];
+          // first order sh bands
+          if (shDegree >= 1) {
+          for (let i = 0; i < 3; i++) {
+            newSplat[OFFSET[`FRC${0 + i}`]] = shBuffers.sh_band_1_0[row * 3 + i];
+            newSplat[OFFSET[`FRC${3 + i}`]] = shBuffers.sh_band_1_1[row * 3 + i];
+            newSplat[OFFSET[`FRC${6 + i}`]] = shBuffers.sh_band_1_2[row * 3 + i];
           }
+
           // second order sh bands
           if (shDegree >= 2) {
-            for (let i = 9; i < 24; i++) {
-              newSplat[OFFSET[`FRC${i}`]] = shBuffers[row * 3 + i];
+            for (let i = 0; i < 3; i++) {
+              newSplat[OFFSET[`FRC${9 + i}`]] =
+                shBuffers.sh_band_2_0[row * 3 + i];
+              newSplat[OFFSET[`FRC${12 + i}`]] =
+                shBuffers.sh_band_2_1[row * 3 + i];
+              newSplat[OFFSET[`FRC${15 + i}`]] =
+                shBuffers.sh_band_2_2[row * 3 + i];
+              newSplat[OFFSET[`FRC${18 + i}`]] =
+                shBuffers.sh_band_2_3[row * 3 + i];
+              newSplat[OFFSET[`FRC${21 + i}`]] =
+                shBuffers.sh_band_2_4[row * 3 + i];
             }
-          }
+          }          
         }
 
         return newSplat;
       };
     })();
 
-    parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers) {
-      return this.decodeSplatData(splatCount, splatBuffers, shBuffers);
+    async parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers) {
+      return await this.decodeSplatData(splatCount, splatBuffers, shBuffers);
     }
   }
 
