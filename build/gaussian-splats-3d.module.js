@@ -7803,6 +7803,8 @@ class GLTFParser {
     }
     const shDegree = degree;
 
+    console.log("the degree is : " + degree);
+
     const splatArray = new UncompressedSplatArray(shDegree);
 
     for (let row = 0; row < splatCount; row++) {
