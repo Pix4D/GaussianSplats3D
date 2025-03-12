@@ -10599,13 +10599,13 @@
       this.visible = false;
 
       // This is used to define how to modify the material
-      this.setupIDMode = this.setupIDMaterialMode.bind(this);
+      this.renderSplatsID = (status) => {
+        this.material.uniforms.uColorID.value = status;
+        this.material.transparent = !status;
+      };
+      
     }
 
-    setupIDMaterialMode = (status) => {
-      this.material.uniforms.uColorID.value = status;
-      this.material.transparent = !status;
-    };
 
     /**
      * Build a container for each scene managed by this splat mesh based on an instance of SplatBuffer, along with optional
@@ -17294,7 +17294,7 @@
       }
     }
 
-    setupIDMode = (function() {
+    renderSplatsID = (function() {
       /**
        * Modifies the uniforms of the shader to render the splats reflecting their
        * ids, it also removes the transparency mode.
@@ -17303,7 +17303,7 @@
 
       return function(status) {
         if (this.splatMesh !== null) {
-          this.splatMesh.setupIDMode(status);
+          this.splatMesh.renderSplatsID(status);
         }
       };
     })();

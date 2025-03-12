@@ -42,7 +42,7 @@ export class DropInViewer extends THREE.Group {
     }
   }
 
-  setupIDMode = (function() {
+  renderSplatsID = (function() {
     /**
      * Modifies the uniforms of the shader to render the splats reflecting their
      * ids, it also removes the transparency mode.
@@ -51,7 +51,7 @@ export class DropInViewer extends THREE.Group {
 
     return function(status) {
       if (this.splatMesh !== null) {
-        this.splatMesh.setupIDMode(status);
+        this.splatMesh.renderSplatsID(status);
       }
     };
   })();
