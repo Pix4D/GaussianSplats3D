@@ -11,7 +11,8 @@
     {
         "imports": {
             "three": "./lib/three.module.js",
-            "@mkkellogg/gaussian-splats-3d": "./lib/gaussian-splats-3d.module.js"
+            "@mkkellogg/gaussian-splats-3d": "./lib/gaussian-splats-3d.module.js",
+            "detect-gpu": "https://cdn.skypack.dev/detect-gpu"
         }
     }
   </script>
@@ -35,12 +36,12 @@
     const mode = parseInt(urlParams.get('mode')) || 0;
 
     const viewer = new GaussianSplats3D.Viewer({
-        'cameraUp': [0, -1, -.17],
+        'cameraUp': [0, 0, 1],
         'initialCameraPosition': [-5, -1, -1],
         'initialCameraLookAt': [-1.72477, 0.05395, -0.00147],
         'sphericalHarmonicsDegree': 2
     });
-    let path = 'assets/data/truck/truck' + (mode ? '_high' : '') + '.ksplat';
+    let path = 'assets/data/gltf_gaussians/pcl.gltf';
     viewer.addSplatScene(path, {
       'progressiveLoad': false
     })

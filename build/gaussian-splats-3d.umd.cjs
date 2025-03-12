@@ -1485,9 +1485,9 @@
           const maxShCoeff = this.maxSphericalHarmonicsCoeff;
 
           if (outSphericalHarmonicsDegree >= 1) {
-            set3FromArray(shIn1, dataView, 3, 0, this.compressionLevel);
-            set3FromArray(shIn2, dataView, 3, 1, this.compressionLevel);
-            set3FromArray(shIn3, dataView, 3, 2, this.compressionLevel);
+            set3FromArray(shIn1, dataView, 1, 0, this.compressionLevel);
+            set3FromArray(shIn2, dataView, 1, 3, this.compressionLevel);
+            set3FromArray(shIn3, dataView, 1, 6, this.compressionLevel);
 
             if (transform) {
               toUncompressedFloatArray3(
@@ -1548,11 +1548,11 @@
             );
 
             if (outSphericalHarmonicsDegree >= 2) {
-              set3FromArray(shIn1, dataView, 5, 9, this.compressionLevel);
-              set3FromArray(shIn2, dataView, 5, 10, this.compressionLevel);
-              set3FromArray(shIn3, dataView, 5, 11, this.compressionLevel);
-              set3FromArray(shIn4, dataView, 5, 12, this.compressionLevel);
-              set3FromArray(shIn5, dataView, 5, 13, this.compressionLevel);
+              set3FromArray(shIn1, dataView, 1, 9, this.compressionLevel);
+              set3FromArray(shIn2, dataView, 1, 12, this.compressionLevel);
+              set3FromArray(shIn3, dataView, 1, 15, this.compressionLevel);
+              set3FromArray(shIn4, dataView, 1, 18, this.compressionLevel);
+              set3FromArray(shIn5, dataView, 1, 21, this.compressionLevel);
 
               if (transform) {
                 toUncompressedFloatArray3(
@@ -7802,12 +7802,12 @@
   };
 
   class GLTFParser {
-    constructor() {}
+    constructor(degree) {
+      this.degree = degree;
+    }
 
     decodeSplatData(splatCount, splatBuffers, shBuffers) {
-      // cool to determine the spherical harmonics degree based on the length of shBuffers?
-      const shDegree =
-        shBuffers.length === 3 ? 1 : shBuffers.length === 8 ? 2 : 0;
+      const shDegree = this.degree;
 
       const splatArray = new UncompressedSplatArray(shDegree);
 
@@ -7892,13 +7892,25 @@
 
         // first order sh bands
         if (shDegree >= 1) {
-          for (let i = 0; i < 9; i++) {
-            newSplat[OFFSET[`FRC${i}`]] = shBuffers[row * 3 + i];
+          for (let i = 0; i < 3; i++) {
+            newSplat[OFFSET[`FRC${0 + i}`]] = shBuffers.sh_band_1_0[row * 3 + i];
+            newSplat[OFFSET[`FRC${3 + i}`]] = shBuffers.sh_band_1_1[row * 3 + i];
+            newSplat[OFFSET[`FRC${6 + i}`]] = shBuffers.sh_band_1_2[row * 3 + i];
           }
+
           // second order sh bands
           if (shDegree >= 2) {
-            for (let i = 9; i < 24; i++) {
-              newSplat[OFFSET[`FRC${i}`]] = shBuffers[row * 3 + i];
+            for (let i = 0; i < 3; i++) {
+              newSplat[OFFSET[`FRC${9 + i}`]] =
+                shBuffers.sh_band_2_0[row * 3 + i];
+              newSplat[OFFSET[`FRC${12 + i}`]] =
+                shBuffers.sh_band_2_1[row * 3 + i];
+              newSplat[OFFSET[`FRC${15 + i}`]] =
+                shBuffers.sh_band_2_2[row * 3 + i];
+              newSplat[OFFSET[`FRC${18 + i}`]] =
+                shBuffers.sh_band_2_3[row * 3 + i];
+              newSplat[OFFSET[`FRC${21 + i}`]] =
+                shBuffers.sh_band_2_4[row * 3 + i];
             }
           }
         }
@@ -7985,17 +7997,29 @@
           'rotation',
           'sh_band_0',
         ]);
-        const shBuffers = await this.fetchBuffers(filePaths, [
-          'sh_band_1_0',
-          'sh_band_1_1',
-          'sh_band_1_2',
+
+        let firstBandBuffers = ['sh_band_1_0', 'sh_band_1_1', 'sh_band_1_2'];
+
+        let secondBandBuffers = [
           'sh_band_2_0',
           'sh_band_2_1',
           'sh_band_2_2',
           'sh_band_2_3',
           'sh_band_2_4',
-          // TODO: higher order bands
-        ]);
+        ];
+
+        let bandBuffers = [];
+        let degree = this.viewer.sphericalHarmonicsDegree;
+
+        if (degree >= 1) {
+          bandBuffers.push(...firstBandBuffers);
+        }
+
+        if (degree >= 2) {
+          bandBuffers.push(...secondBandBuffers);
+        }
+
+        const shBuffers = await this.fetchBuffers(filePaths, bandBuffers);
         const splatCount = this.getSplatCountFromGLTF(gltf);
 
         return this.loadFromBufferData(splatCount, splatBuffers, shBuffers);
@@ -8058,11 +8082,9 @@
 
     async loadFromBufferData(splatCount, splatBuffers, shBuffers = []) {
       return delayedExecute(() =>
-        new GLTFParser().parseToUncompressedSplatArray(
-          splatCount,
-          splatBuffers,
-          shBuffers,
-        ),
+        new GLTFParser(
+          this.viewer.sphericalHarmonicsDegree,
+        ).parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers),
       ).then(finalize);
     }
   }
@@ -10603,9 +10625,7 @@
         this.material.uniforms.uColorID.value = status;
         this.material.transparent = !status;
       };
-      
     }
-
 
     /**
      * Build a container for each scene managed by this splat mesh based on an instance of SplatBuffer, along with optional

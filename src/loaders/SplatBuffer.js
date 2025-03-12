@@ -1005,9 +1005,9 @@ export class SplatBuffer {
         const maxShCoeff = this.maxSphericalHarmonicsCoeff;
 
         if (outSphericalHarmonicsDegree >= 1) {
-          set3FromArray(shIn1, dataView, 3, 0, this.compressionLevel);
-          set3FromArray(shIn2, dataView, 3, 1, this.compressionLevel);
-          set3FromArray(shIn3, dataView, 3, 2, this.compressionLevel);
+          set3FromArray(shIn1, dataView, 1, 0, this.compressionLevel);
+          set3FromArray(shIn2, dataView, 1, 3, this.compressionLevel);
+          set3FromArray(shIn3, dataView, 1, 6, this.compressionLevel);
 
           if (transform) {
             toUncompressedFloatArray3(
@@ -1068,11 +1068,11 @@ export class SplatBuffer {
           );
 
           if (outSphericalHarmonicsDegree >= 2) {
-            set3FromArray(shIn1, dataView, 5, 9, this.compressionLevel);
-            set3FromArray(shIn2, dataView, 5, 10, this.compressionLevel);
-            set3FromArray(shIn3, dataView, 5, 11, this.compressionLevel);
-            set3FromArray(shIn4, dataView, 5, 12, this.compressionLevel);
-            set3FromArray(shIn5, dataView, 5, 13, this.compressionLevel);
+            set3FromArray(shIn1, dataView, 1, 9, this.compressionLevel);
+            set3FromArray(shIn2, dataView, 1, 12, this.compressionLevel);
+            set3FromArray(shIn3, dataView, 1, 15, this.compressionLevel);
+            set3FromArray(shIn4, dataView, 1, 18, this.compressionLevel);
+            set3FromArray(shIn5, dataView, 1, 21, this.compressionLevel);
 
             if (transform) {
               toUncompressedFloatArray3(
