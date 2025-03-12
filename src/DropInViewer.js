@@ -131,20 +131,6 @@ export class DropInViewer extends THREE.Group {
     );
   }
 
-  /*
-   * Uses the raycaster to traverse the different splats and checks for collisions.
-   *
-   * @param {object} camera is the perspective camera used to render
-   * @param {object} position is the normalized position relative to the screen.
-   * @param {object} screenSize
-   * @returns {object|null} the first splat that collides with the ray.
-   */
-  getSplatPosition = (function() {
-    return function(rendererSize, camera, position) {
-      return this.viewer.getSplatPosition(rendererSize, camera, position);
-    };
-  })();
-
   async dispose() {
     return await this.viewer.dispose();
   }

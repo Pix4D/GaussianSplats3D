@@ -178,9 +178,6 @@ export class Viewer {
     // Degree of spherical harmonics to utilize in rendering splats (assuming the data is present in the splat scene).
     // Valid values are 0 - 2. Default value is 0.
     this.sphericalHarmonicsDegree = options.sphericalHarmonicsDegree || 0;
-    console.log(
-      'The spherical harmonics degree is: ' + this.sphericalHarmonicsDegree,
-    );
 
     // When true, allows for usage of extra properties and attributes during rendering for effects such as opacity adjustment.
     // Default is false for performance reasons. These properties are separate from transform properties (scale, rotation, position)
@@ -709,31 +706,6 @@ export class Viewer {
           }
         }
       }
-    };
-  })();
-
-  /*
-   * Uses the raycaster to traverse the different splats and checks for collisions.
-   *
-   * @param {object} camera is the perspective camera used to render
-   * @param {object} position is the normalized position relative to the screen.
-   * @param {object} screenSize
-   * @returns {object|null} the first splat that collides with the ray.
-   */
-  getSplatPosition = (function() {
-    return function(renderDimensions, camera, position) {
-      const outHits = [];
-      this.raycaster.setFromCameraAndScreenPosition(
-        camera,
-        position,
-        renderDimensions,
-      );
-      this.raycaster.intersectSplatMesh(this.splatMesh, outHits);
-      if (outHits.length > 0) {
-        const hit = outHits[0];
-        return hit;
-      }
-      return null;
     };
   })();
 
