@@ -80,8 +80,7 @@ export class SplatMaterial3D {
     };
 
     uniforms['uColorID'] = {
-      type: 'f',
-      value: 0,
+      value: true,
     };
 
     const material = new THREE.ShaderMaterial({

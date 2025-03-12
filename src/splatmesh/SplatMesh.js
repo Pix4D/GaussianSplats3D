@@ -168,7 +168,7 @@ export class SplatMesh extends THREE.Mesh {
   }
 
   setupIDMaterialMode = (status) => {
-    this.material.uniforms.uColorID.value = Number(status);
+    this.material.uniforms.uColorID.value = status;
     this.material.transparent = !status;
   };
 

@@ -9038,8 +9038,7 @@
       };
 
       uniforms['uColorID'] = {
-        type: 'f',
-        value: 0,
+        value: true,
       };
 
       const material = new THREE__namespace.ShaderMaterial({
@@ -10604,7 +10603,7 @@
     }
 
     setupIDMaterialMode = (status) => {
-      this.material.uniforms.uColorID.value = Number(status);
+      this.material.uniforms.uColorID.value = status;
       this.material.transparent = !status;
     };
 
@@ -17295,14 +17294,12 @@
       }
     }
 
-
     setupIDMode = (function() {
-
       /**
-     * Modifies the uniforms of the shader to render the splats reflecting their
-     * ids, it also removes the transparency mode.
-     * @param {status} boolean value used to set if the shader renders IDs or the splats in regular mode
-     */
+       * Modifies the uniforms of the shader to render the splats reflecting their
+       * ids, it also removes the transparency mode.
+       * @param {status} boolean value used to set if the shader renders IDs or the splats in regular mode
+       */
 
       return function(status) {
         if (this.splatMesh !== null) {
