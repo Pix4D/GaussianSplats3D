@@ -709,31 +709,6 @@ export class Viewer {
     };
   })();
 
-  /*
-   * Uses the raycaster to traverse the different splats and checks for collisions.
-   *
-   * @param {object} camera is the perspective camera used to render
-   * @param {object} position is the normalized position relative to the screen.
-   * @param {object} screenSize
-   * @returns {object|null} the first splat that collides with the ray.
-   */
-  getSplatPosition = (function() {
-    return function(renderDimensions, camera, position) {
-      const outHits = [];
-      this.raycaster.setFromCameraAndScreenPosition(
-        camera,
-        position,
-        renderDimensions,
-      );
-      this.raycaster.intersectSplatMesh(this.splatMesh, outHits);
-      if (outHits.length > 0) {
-        const hit = outHits[0];
-        return hit;
-      }
-      return null;
-    };
-  })();
-
   getRenderDimensions(outDimensions) {
     if (this.rootElement) {
       outDimensions.x = this.rootElement.offsetWidth;

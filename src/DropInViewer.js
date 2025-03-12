@@ -42,12 +42,13 @@ export class DropInViewer extends THREE.Group {
     }
   }
 
-  /*
-   * Modifies the uniforms of the shader to render the splats reflecting their
-   * ids, it also removes the transparency mode.
-   * @param {status} boolean value used to set if the shader renders IDs or the splats in regular mode
-   */
   setupIDMode = (function() {
+    /**
+     * Modifies the uniforms of the shader to render the splats reflecting their
+     * ids, it also removes the transparency mode.
+     * @param {status} boolean value used to set if the shader renders IDs or the splats in regular mode
+     */
+
     return function(status) {
       if (this.splatMesh !== null) {
         this.splatMesh.setupIDMode(status);
@@ -130,20 +131,6 @@ export class DropInViewer extends THREE.Group {
       activeSphericalHarmonicsDegrees,
     );
   }
-
-  /*
-   * Uses the raycaster to traverse the different splats and checks for collisions.
-   *
-   * @param {object} camera is the perspective camera used to render
-   * @param {object} position is the normalized position relative to the screen.
-   * @param {object} screenSize
-   * @returns {object|null} the first splat that collides with the ray.
-   */
-  getSplatPosition = (function() {
-    return function(rendererSize, camera, position) {
-      return this.viewer.getSplatPosition(rendererSize, camera, position);
-    };
-  })();
 
   async dispose() {
     return await this.viewer.dispose();

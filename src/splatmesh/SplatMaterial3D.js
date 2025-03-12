@@ -79,7 +79,7 @@ export class SplatMaterial3D {
       value: 0,
     };
 
-    uniforms['uSetID'] = {
+    uniforms['uColorID'] = {
       type: 'f',
       value: 0,
     };
@@ -257,7 +257,7 @@ export class SplatMaterial3D {
             #include <common>
  
             uniform vec3 debugColor;
-            uniform float uSetID;
+            uniform bool uColorID;
 
             varying vec4 vColor;
             varying vec2 vUv;
@@ -285,7 +285,7 @@ export class SplatMaterial3D {
 
                 vec3 color = vColor.rgb;
 
-                if(uSetID > 0.5) {
+                if(uColorID) {
                   
                   if(opacity < 0.1) discard;
 

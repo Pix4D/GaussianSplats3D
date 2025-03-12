@@ -9037,7 +9037,7 @@
         value: 0,
       };
 
-      uniforms['uSetID'] = {
+      uniforms['uColorID'] = {
         type: 'f',
         value: 0,
       };
@@ -9215,7 +9215,7 @@
             #include <common>
  
             uniform vec3 debugColor;
-            uniform float uSetID;
+            uniform bool uColorID;
 
             varying vec4 vColor;
             varying vec2 vUv;
@@ -9243,7 +9243,7 @@
 
                 vec3 color = vColor.rgb;
 
-                if(uSetID > 0.5) {
+                if(uColorID) {
                   
                   if(opacity < 0.1) discard;
 
@@ -10604,7 +10604,7 @@
     }
 
     setupIDMaterialMode = (status) => {
-      this.material.uniforms.uSetID.value = Number(status);
+      this.material.uniforms.uColorID.value = Number(status);
       this.material.transparent = !status;
     };
 
@@ -15335,31 +15335,6 @@
       };
     })();
 
-    /*
-     * Uses the raycaster to traverse the different splats and checks for collisions.
-     *
-     * @param {object} camera is the perspective camera used to render
-     * @param {object} position is the normalized position relative to the screen.
-     * @param {object} screenSize
-     * @returns {object|null} the first splat that collides with the ray.
-     */
-    getSplatPosition = (function() {
-      return function(renderDimensions, camera, position) {
-        const outHits = [];
-        this.raycaster.setFromCameraAndScreenPosition(
-          camera,
-          position,
-          renderDimensions,
-        );
-        this.raycaster.intersectSplatMesh(this.splatMesh, outHits);
-        if (outHits.length > 0) {
-          const hit = outHits[0];
-          return hit;
-        }
-        return null;
-      };
-    })();
-
     getRenderDimensions(outDimensions) {
       if (this.rootElement) {
         outDimensions.x = this.rootElement.offsetWidth;
@@ -17320,12 +17295,15 @@
       }
     }
 
-    /*
+
+    setupIDMode = (function() {
+
+      /**
      * Modifies the uniforms of the shader to render the splats reflecting their
      * ids, it also removes the transparency mode.
      * @param {status} boolean value used to set if the shader renders IDs or the splats in regular mode
      */
-    setupIDMode = (function() {
+
       return function(status) {
         if (this.splatMesh !== null) {
           this.splatMesh.setupIDMode(status);
@@ -17408,20 +17386,6 @@
         activeSphericalHarmonicsDegrees,
       );
     }
-
-    /*
-     * Uses the raycaster to traverse the different splats and checks for collisions.
-     *
-     * @param {object} camera is the perspective camera used to render
-     * @param {object} position is the normalized position relative to the screen.
-     * @param {object} screenSize
-     * @returns {object|null} the first splat that collides with the ray.
-     */
-    getSplatPosition = (function() {
-      return function(rendererSize, camera, position) {
-        return this.viewer.getSplatPosition(rendererSize, camera, position);
-      };
-    })();
 
     async dispose() {
       return await this.viewer.dispose();
