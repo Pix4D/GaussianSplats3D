@@ -9060,7 +9060,7 @@
       };
 
       uniforms['uColorID'] = {
-        value: true,
+        value: false,
       };
 
       const material = new THREE__namespace.ShaderMaterial({
