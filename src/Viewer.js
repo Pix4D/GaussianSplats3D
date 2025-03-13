@@ -694,7 +694,9 @@ export class Viewer {
         this.raycaster.intersectSplatMesh(this.splatMesh, outHits);
         if (outHits.length > 0) {
           const hit = outHits[0];
+
           const intersectionPoint = hit.origin;
+
           toNewFocalPoint.copy(intersectionPoint).sub(this.camera.position);
           if (toNewFocalPoint.length() > MINIMUM_DISTANCE_TO_NEW_FOCAL_POINT) {
             this.previousCameraTarget.copy(this.controls.target);

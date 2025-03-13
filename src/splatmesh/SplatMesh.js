@@ -162,6 +162,12 @@ export class SplatMesh extends THREE.Mesh {
     this.disposed = false;
     this.lastRenderer = null;
     this.visible = false;
+
+    // This is used to define how to modify the material
+    this.renderSplatsID = (status) => {
+      this.material.uniforms.uColorID.value = status;
+      this.material.transparent = !status;
+    };
   }
 
   /**

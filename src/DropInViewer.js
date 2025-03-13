@@ -8,7 +8,6 @@ import { Viewer } from './Viewer.js';
 export class DropInViewer extends THREE.Group {
   constructor(options = {}) {
     super();
-
     options.selfDrivenMode = false;
     options.useBuiltInControls = false;
     options.rootElement = null;
@@ -42,6 +41,20 @@ export class DropInViewer extends THREE.Group {
       this.add(this.viewer.splatMesh);
     }
   }
+
+  renderSplatsID = (function() {
+    /**
+     * Modifies the uniforms of the shader to render the splats reflecting their
+     * ids, it also removes the transparency mode.
+     * @param {status} boolean value used to set if the shader renders IDs or the splats in regular mode
+     */
+
+    return function(status) {
+      if (this.splatMesh !== null) {
+        this.splatMesh.renderSplatsID(status);
+      }
+    };
+  })();
 
   /**
    * Add a single splat scene to the viewer.

@@ -1485,9 +1485,9 @@
           const maxShCoeff = this.maxSphericalHarmonicsCoeff;
 
           if (outSphericalHarmonicsDegree >= 1) {
-            set3FromArray(shIn1, dataView, 3, 0, this.compressionLevel);
-            set3FromArray(shIn2, dataView, 3, 1, this.compressionLevel);
-            set3FromArray(shIn3, dataView, 3, 2, this.compressionLevel);
+            set3FromArray(shIn1, dataView, 1, 0, this.compressionLevel);
+            set3FromArray(shIn2, dataView, 1, 3, this.compressionLevel);
+            set3FromArray(shIn3, dataView, 1, 6, this.compressionLevel);
 
             if (transform) {
               toUncompressedFloatArray3(
@@ -1548,11 +1548,11 @@
             );
 
             if (outSphericalHarmonicsDegree >= 2) {
-              set3FromArray(shIn1, dataView, 5, 9, this.compressionLevel);
-              set3FromArray(shIn2, dataView, 5, 10, this.compressionLevel);
-              set3FromArray(shIn3, dataView, 5, 11, this.compressionLevel);
-              set3FromArray(shIn4, dataView, 5, 12, this.compressionLevel);
-              set3FromArray(shIn5, dataView, 5, 13, this.compressionLevel);
+              set3FromArray(shIn1, dataView, 1, 9, this.compressionLevel);
+              set3FromArray(shIn2, dataView, 1, 12, this.compressionLevel);
+              set3FromArray(shIn3, dataView, 1, 15, this.compressionLevel);
+              set3FromArray(shIn4, dataView, 1, 18, this.compressionLevel);
+              set3FromArray(shIn5, dataView, 1, 21, this.compressionLevel);
 
               if (transform) {
                 toUncompressedFloatArray3(
@@ -7802,12 +7802,12 @@
   };
 
   class GLTFParser {
-    constructor() {}
+    constructor(degree) {
+      this.degree = degree;
+    }
 
     decodeSplatData(splatCount, splatBuffers, shBuffers) {
-      // cool to determine the spherical harmonics degree based on the length of shBuffers?
-      const shDegree =
-        shBuffers.length === 3 ? 1 : shBuffers.length === 8 ? 2 : 0;
+      const shDegree = this.degree;
 
       const splatArray = new UncompressedSplatArray(shDegree);
 
@@ -7892,13 +7892,25 @@
 
         // first order sh bands
         if (shDegree >= 1) {
-          for (let i = 0; i < 9; i++) {
-            newSplat[OFFSET[`FRC${i}`]] = shBuffers[row * 3 + i];
+          for (let i = 0; i < 3; i++) {
+            newSplat[OFFSET[`FRC${0 + i}`]] = shBuffers.sh_band_1_0[row * 3 + i];
+            newSplat[OFFSET[`FRC${3 + i}`]] = shBuffers.sh_band_1_1[row * 3 + i];
+            newSplat[OFFSET[`FRC${6 + i}`]] = shBuffers.sh_band_1_2[row * 3 + i];
           }
+
           // second order sh bands
           if (shDegree >= 2) {
-            for (let i = 9; i < 24; i++) {
-              newSplat[OFFSET[`FRC${i}`]] = shBuffers[row * 3 + i];
+            for (let i = 0; i < 3; i++) {
+              newSplat[OFFSET[`FRC${9 + i}`]] =
+                shBuffers.sh_band_2_0[row * 3 + i];
+              newSplat[OFFSET[`FRC${12 + i}`]] =
+                shBuffers.sh_band_2_1[row * 3 + i];
+              newSplat[OFFSET[`FRC${15 + i}`]] =
+                shBuffers.sh_band_2_2[row * 3 + i];
+              newSplat[OFFSET[`FRC${18 + i}`]] =
+                shBuffers.sh_band_2_3[row * 3 + i];
+              newSplat[OFFSET[`FRC${21 + i}`]] =
+                shBuffers.sh_band_2_4[row * 3 + i];
             }
           }
         }
@@ -7985,17 +7997,29 @@
           'rotation',
           'sh_band_0',
         ]);
-        const shBuffers = await this.fetchBuffers(filePaths, [
-          'sh_band_1_0',
-          'sh_band_1_1',
-          'sh_band_1_2',
+
+        let firstBandBuffers = ['sh_band_1_0', 'sh_band_1_1', 'sh_band_1_2'];
+
+        let secondBandBuffers = [
           'sh_band_2_0',
           'sh_band_2_1',
           'sh_band_2_2',
           'sh_band_2_3',
           'sh_band_2_4',
-          // TODO: higher order bands
-        ]);
+        ];
+
+        let bandBuffers = [];
+        let degree = this.viewer.sphericalHarmonicsDegree;
+
+        if (degree >= 1) {
+          bandBuffers.push(...firstBandBuffers);
+        }
+
+        if (degree >= 2) {
+          bandBuffers.push(...secondBandBuffers);
+        }
+
+        const shBuffers = await this.fetchBuffers(filePaths, bandBuffers);
         const splatCount = this.getSplatCountFromGLTF(gltf);
 
         return this.loadFromBufferData(splatCount, splatBuffers, shBuffers);
@@ -8058,11 +8082,9 @@
 
     async loadFromBufferData(splatCount, splatBuffers, shBuffers = []) {
       return delayedExecute(() =>
-        new GLTFParser().parseToUncompressedSplatArray(
-          splatCount,
-          splatBuffers,
-          shBuffers,
-        ),
+        new GLTFParser(
+          this.viewer.sphericalHarmonicsDegree,
+        ).parseToUncompressedSplatArray(splatCount, splatBuffers, shBuffers),
       ).then(finalize);
     }
   }
@@ -8482,6 +8504,9 @@
         varying vec4 vColor;
         varying vec2 vUv;
         varying vec2 vPosition;
+        varying float vZ;
+        varying float vSplatIndex;
+        varying vec4 vVertex;
 
         mat3 quaternionToRotationMatrix(float x, float y, float z, float w) {
             float s = 1.0 / sqrt(w * w + x * x + y * y + z * z);
@@ -8532,6 +8557,8 @@
         const float[5] SH_C2 = float[](1.0925484, -1.0925484, 0.3153916, -1.0925484, 0.5462742);
 
         void main () {
+
+            vSplatIndex = float(splatIndex);
 
             uint oddOffset = splatIndex & uint(0x00000001);
             uint doubleOddOffset = oddOffset * uint(2);
@@ -8755,7 +8782,6 @@
         vertexShaderSource += `
 
                 vColor.rgb = clamp(vColor.rgb, vec3(0.), vec3(1.));
-
             }
 
             `;
@@ -9033,6 +9059,10 @@
         value: 0,
       };
 
+      uniforms['uColorID'] = {
+        value: true,
+      };
+
       const material = new THREE__namespace.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: vertexShaderSource,
@@ -9186,7 +9216,9 @@
                              basisViewport * 2.0 * inverseFocalAdjustment;
 
             vec4 quadPos = vec4(ndcCenter.xy + ndcOffset, ndcCenter.z, 1.0);
+            vZ = ndcCenter.z;
             gl_Position = quadPos;
+            vVertex = gl_Position;
 
             // Scale the position data we send to the fragment shader
             vPosition *= sqrt8;
@@ -9204,29 +9236,49 @@
             #include <common>
  
             uniform vec3 debugColor;
+            uniform bool uColorID;
 
             varying vec4 vColor;
             varying vec2 vUv;
             varying vec2 vPosition;
+            varying float vZ;
+            varying float vSplatIndex;
+            varying vec4 vVertex;
         `;
 
       fragmentShaderSource += `
             void main () {
                 // Compute the positional squared distance from the center of the splat to the current fragment.
                 float A = dot(vPosition, vPosition);
+
                 // Since the positional data in vPosition has been scaled by sqrt(8), the squared result will be
                 // scaled by a factor of 8. If the squared result is larger than 8, it means it is outside the ellipse
                 // defined by the rectangle formed by vPosition. It also means it's farther
                 // away than sqrt(8) standard deviations from the mean.
                 if (A > 8.0) discard;
-                vec3 color = vColor.rgb;
 
                 // Since the rendered splat is scaled by sqrt(8), the inverse covariance matrix that is part of
                 // the gaussian formula becomes the identity matrix. We're then left with (X - mean) * (X - mean),
                 // and since 'mean' is zero, we have X * X, which is the same as A:
                 float opacity = exp(-0.5 * A) * vColor.a;
 
-                gl_FragColor = vec4(color.rgb, opacity);
+                vec3 color = vColor.rgb;
+
+                if(uColorID) {
+                  
+                  if(opacity < 0.1) discard;
+
+                  vec2 screenData = vVertex.xy / vVertex.w;
+                  screenData = 0.5 * screenData + 0.5;
+
+                  float index = float(vSplatIndex);
+
+                  gl_FragColor = vec4(index, 0., 0., 1.);
+                  return;
+
+                }
+
+                gl_FragColor = vec4(color, opacity);
             }
         `;
 
@@ -10567,6 +10619,12 @@
       this.disposed = false;
       this.lastRenderer = null;
       this.visible = false;
+
+      // This is used to define how to modify the material
+      this.renderSplatsID = (status) => {
+        this.material.uniforms.uColorID.value = status;
+        this.material.transparent = !status;
+      };
     }
 
     /**
@@ -15281,7 +15339,9 @@
           this.raycaster.intersectSplatMesh(this.splatMesh, outHits);
           if (outHits.length > 0) {
             const hit = outHits[0];
+
             const intersectionPoint = hit.origin;
+
             toNewFocalPoint.copy(intersectionPoint).sub(this.camera.position);
             if (toNewFocalPoint.length() > MINIMUM_DISTANCE_TO_NEW_FOCAL_POINT) {
               this.previousCameraTarget.copy(this.controls.target);
@@ -17220,7 +17280,6 @@
   class DropInViewer extends THREE__namespace.Group {
     constructor(options = {}) {
       super();
-
       options.selfDrivenMode = false;
       options.useBuiltInControls = false;
       options.rootElement = null;
@@ -17254,6 +17313,20 @@
         this.add(this.viewer.splatMesh);
       }
     }
+
+    renderSplatsID = (function() {
+      /**
+       * Modifies the uniforms of the shader to render the splats reflecting their
+       * ids, it also removes the transparency mode.
+       * @param {status} boolean value used to set if the shader renders IDs or the splats in regular mode
+       */
+
+      return function(status) {
+        if (this.splatMesh !== null) {
+          this.splatMesh.renderSplatsID(status);
+        }
+      };
+    })();
 
     /**
      * Add a single splat scene to the viewer.
