@@ -42,6 +42,14 @@ function getFilePaths(gltf, gltfUrl) {
       sh_band_2_2: extensions.sh_band_2_triplet_2,
       sh_band_2_3: extensions.sh_band_2_triplet_3,
       sh_band_2_4: extensions.sh_band_2_triplet_4,
+      // 3nd order
+      sh_band_3_0: extensions.sh_band_3_triplet_0,
+      sh_band_3_1: extensions.sh_band_3_triplet_1,
+      sh_band_3_2: extensions.sh_band_3_triplet_2,
+      sh_band_3_3: extensions.sh_band_3_triplet_3,
+      sh_band_3_4: extensions.sh_band_3_triplet_4,
+      sh_band_3_5: extensions.sh_band_3_triplet_5,
+      sh_band_3_6: extensions.sh_band_3_triplet_6,
     };
 
     return Object.fromEntries(
@@ -87,6 +95,16 @@ export class GLTFLoader {
         'sh_band_2_4',
       ];
 
+      let thirdBandBuffers = [
+        'sh_band_3_0',
+        'sh_band_3_1',
+        'sh_band_3_2',
+        'sh_band_3_3',
+        'sh_band_3_4',
+        'sh_band_3_5',
+        'sh_band_3_6',
+      ];
+
       let bandBuffers = [];
       let degree = this.viewer.sphericalHarmonicsDegree;
 
@@ -96,6 +114,10 @@ export class GLTFLoader {
 
       if (degree >= 2) {
         bandBuffers.push(...secondBandBuffers);
+      }
+
+      if (degree >= 3) {
+        bandBuffers.push(...thirdBandBuffers);
       }
 
       const shBuffers = await this.fetchBuffers(filePaths, bandBuffers);

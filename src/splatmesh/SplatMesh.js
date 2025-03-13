@@ -108,7 +108,6 @@ export class SplatMesh extends THREE.Mesh {
 
     // Degree 0 means no spherical harmonics
     this.sphericalHarmonicsDegree = sphericalHarmonicsDegree;
-    this.minSphericalHarmonicsDegree = 0;
 
     this.sceneFadeInRateMultiplier = sceneFadeInRateMultiplier;
 

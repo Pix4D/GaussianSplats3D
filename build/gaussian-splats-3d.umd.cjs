@@ -621,6 +621,7 @@
           0: { BytesPerSplat: 44 },
           1: { BytesPerSplat: 80 },
           2: { BytesPerSplat: 140 },
+          3: { BytesPerSplat: 236 },
         },
       },
       1: {
@@ -639,6 +640,7 @@
           0: { BytesPerSplat: 24 },
           1: { BytesPerSplat: 42 },
           2: { BytesPerSplat: 72 },
+          3: { BytesPerSplat: 114 },
         },
       },
       2: {
@@ -657,6 +659,7 @@
           0: { BytesPerSplat: 24 },
           1: { BytesPerSplat: 33 },
           2: { BytesPerSplat: 48 },
+          3: { BytesPerSplat: 69 },
         },
       },
     };
@@ -1296,6 +1299,13 @@
       const shOut3 = [];
       const shOut4 = [];
       const shOut5 = [];
+      const shOut31 = [];
+      const shOut32 = [];
+      const shOut33 = [];
+      const shOut34 = [];
+      const shOut35 = [];
+      const shOut36 = [];
+      const shOut37 = [];
 
       const noop = (v) => v;
 
@@ -1646,6 +1656,59 @@
                 shOut5,
                 outSphericalHarmonicsArray,
                 shDestBase + 21,
+                outputConversionFunc,
+              );
+            }
+            // TODO: define rotations for the third degree
+            if (outSphericalHarmonicsDegree >= 3) {
+              set3FromArray(shOut31, dataView, 1, 24, this.compressionLevel);
+              set3FromArray(shOut32, dataView, 1, 27, this.compressionLevel);
+              set3FromArray(shOut33, dataView, 1, 30, this.compressionLevel);
+              set3FromArray(shOut34, dataView, 1, 33, this.compressionLevel);
+              set3FromArray(shOut35, dataView, 1, 36, this.compressionLevel);
+              set3FromArray(shOut36, dataView, 1, 39, this.compressionLevel);
+              set3FromArray(shOut37, dataView, 1, 42, this.compressionLevel);
+
+              setOutput3(
+                shOut31,
+                outSphericalHarmonicsArray,
+                shDestBase + 24,
+                outputConversionFunc,
+              );
+              setOutput3(
+                shOut32,
+                outSphericalHarmonicsArray,
+                shDestBase + 27,
+                outputConversionFunc,
+              );
+              setOutput3(
+                shOut33,
+                outSphericalHarmonicsArray,
+                shDestBase + 30,
+                outputConversionFunc,
+              );
+              setOutput3(
+                shOut34,
+                outSphericalHarmonicsArray,
+                shDestBase + 33,
+                outputConversionFunc,
+              );
+              setOutput3(
+                shOut35,
+                outSphericalHarmonicsArray,
+                shDestBase + 36,
+                outputConversionFunc,
+              );
+              setOutput3(
+                shOut36,
+                outSphericalHarmonicsArray,
+                shDestBase + 39,
+                outputConversionFunc,
+              );
+              setOutput3(
+                shOut37,
+                outSphericalHarmonicsArray,
+                shDestBase + 42,
                 outputConversionFunc,
               );
             }
@@ -2200,6 +2263,7 @@
         OPACITY: OFFSET_OPACITY,
         FRC0: OFFSET_FRC0,
         FRC9: OFFSET_FRC9,
+        FRC24: OFFSET_FRC24,
       } = UncompressedSplatArray.OFFSET;
 
       const compressPositionOffset = (
@@ -2301,6 +2365,11 @@
               if (sphericalHarmonicsDegree >= 2) {
                 for (let s = 0; s < 15; s++) {
                   shOut[s + 9] = targetSplat[OFFSET_FRC9 + s] || 0;
+                }
+                if (sphericalHarmonicsDegree >= 3) {
+                  for (let s = 0; s < 21; s++) {
+                    shOut[s + 24] = targetSplat[OFFSET_FRC24 + s] || 0;
+                  }
                 }
               }
             }
@@ -2454,7 +2523,7 @@
           const splat = splatArray.splats[i];
           for (
             let sc = UncompressedSplatArray.OFFSET.FRC0;
-            sc < UncompressedSplatArray.OFFSET.FRC23 && sc < splat.length;
+            sc < UncompressedSplatArray.OFFSET.FRC44 && sc < splat.length;
             sc++
           ) {
             if (
@@ -7913,6 +7982,27 @@
                 shBuffers.sh_band_2_4[row * 3 + i];
             }
           }
+
+          // third order sh bands
+          if (shDegree >= 3) {
+            for (let i = 0; i < 3; i++) {
+              newSplat[OFFSET[`FRC${24 + i}`]] =
+                shBuffers.sh_band_3_0[row * 3 + i];
+              newSplat[OFFSET[`FRC${27 + i}`]] =
+                shBuffers.sh_band_3_1[row * 3 + i];
+              newSplat[OFFSET[`FRC${30 + i}`]] =
+                shBuffers.sh_band_3_2[row * 3 + i];
+              newSplat[OFFSET[`FRC${33 + i}`]] =
+                shBuffers.sh_band_3_3[row * 3 + i];
+              newSplat[OFFSET[`FRC${36 + i}`]] =
+                shBuffers.sh_band_3_4[row * 3 + i];
+              newSplat[OFFSET[`FRC${39 + i}`]] =
+                shBuffers.sh_band_3_5[row * 3 + i];
+              newSplat[OFFSET[`FRC${42 + i}`]] =
+                shBuffers.sh_band_3_6[row * 3 + i];
+            }
+          }
+
         }
 
         return newSplat;
@@ -7963,6 +8053,14 @@
         sh_band_2_2: extensions.sh_band_2_triplet_2,
         sh_band_2_3: extensions.sh_band_2_triplet_3,
         sh_band_2_4: extensions.sh_band_2_triplet_4,
+        // 3nd order
+        sh_band_3_0: extensions.sh_band_3_triplet_0,
+        sh_band_3_1: extensions.sh_band_3_triplet_1,
+        sh_band_3_2: extensions.sh_band_3_triplet_2,
+        sh_band_3_3: extensions.sh_band_3_triplet_3,
+        sh_band_3_4: extensions.sh_band_3_triplet_4,
+        sh_band_3_5: extensions.sh_band_3_triplet_5,
+        sh_band_3_6: extensions.sh_band_3_triplet_6,
       };
 
       return Object.fromEntries(
@@ -8008,6 +8106,17 @@
           'sh_band_2_4',
         ];
 
+
+        let thirdBandBuffers = [
+          'sh_band_3_0',
+          'sh_band_3_1',
+          'sh_band_3_2',
+          'sh_band_3_3',
+          'sh_band_3_4',
+          'sh_band_3_5',
+          'sh_band_3_6',
+        ];
+
         let bandBuffers = [];
         let degree = this.viewer.sphericalHarmonicsDegree;
 
@@ -8017,6 +8126,10 @@
 
         if (degree >= 2) {
           bandBuffers.push(...secondBandBuffers);
+        }
+
+        if (degree >= 3) {
+          bandBuffers.push(...thirdBandBuffers);
         }
 
         const shBuffers = await this.fetchBuffers(filePaths, bandBuffers);
@@ -10565,7 +10678,6 @@
 
       // Degree 0 means no spherical harmonics
       this.sphericalHarmonicsDegree = sphericalHarmonicsDegree;
-      this.minSphericalHarmonicsDegree = 0;
 
       this.sceneFadeInRateMultiplier = sceneFadeInRateMultiplier;
 

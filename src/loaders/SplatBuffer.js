@@ -141,6 +141,7 @@ export class SplatBuffer {
         0: { BytesPerSplat: 44 },
         1: { BytesPerSplat: 80 },
         2: { BytesPerSplat: 140 },
+        3: { BytesPerSplat: 236 },
       },
     },
     1: {
@@ -159,6 +160,7 @@ export class SplatBuffer {
         0: { BytesPerSplat: 24 },
         1: { BytesPerSplat: 42 },
         2: { BytesPerSplat: 72 },
+        3: { BytesPerSplat: 114 },
       },
     },
     2: {
@@ -177,6 +179,7 @@ export class SplatBuffer {
         0: { BytesPerSplat: 24 },
         1: { BytesPerSplat: 33 },
         2: { BytesPerSplat: 48 },
+        3: { BytesPerSplat: 69 },
       },
     },
   };
@@ -816,6 +819,13 @@ export class SplatBuffer {
     const shOut3 = [];
     const shOut4 = [];
     const shOut5 = [];
+    const shOut31 = [];
+    const shOut32 = [];
+    const shOut33 = [];
+    const shOut34 = [];
+    const shOut35 = [];
+    const shOut36 = [];
+    const shOut37 = [];
 
     const noop = (v) => v;
 
@@ -1166,6 +1176,59 @@ export class SplatBuffer {
               shOut5,
               outSphericalHarmonicsArray,
               shDestBase + 21,
+              outputConversionFunc,
+            );
+          }
+          // TODO: define rotations for the third degree
+          if (outSphericalHarmonicsDegree >= 3) {
+            set3FromArray(shOut31, dataView, 1, 24, this.compressionLevel);
+            set3FromArray(shOut32, dataView, 1, 27, this.compressionLevel);
+            set3FromArray(shOut33, dataView, 1, 30, this.compressionLevel);
+            set3FromArray(shOut34, dataView, 1, 33, this.compressionLevel);
+            set3FromArray(shOut35, dataView, 1, 36, this.compressionLevel);
+            set3FromArray(shOut36, dataView, 1, 39, this.compressionLevel);
+            set3FromArray(shOut37, dataView, 1, 42, this.compressionLevel);
+
+            setOutput3(
+              shOut31,
+              outSphericalHarmonicsArray,
+              shDestBase + 24,
+              outputConversionFunc,
+            );
+            setOutput3(
+              shOut32,
+              outSphericalHarmonicsArray,
+              shDestBase + 27,
+              outputConversionFunc,
+            );
+            setOutput3(
+              shOut33,
+              outSphericalHarmonicsArray,
+              shDestBase + 30,
+              outputConversionFunc,
+            );
+            setOutput3(
+              shOut34,
+              outSphericalHarmonicsArray,
+              shDestBase + 33,
+              outputConversionFunc,
+            );
+            setOutput3(
+              shOut35,
+              outSphericalHarmonicsArray,
+              shDestBase + 36,
+              outputConversionFunc,
+            );
+            setOutput3(
+              shOut36,
+              outSphericalHarmonicsArray,
+              shDestBase + 39,
+              outputConversionFunc,
+            );
+            setOutput3(
+              shOut37,
+              outSphericalHarmonicsArray,
+              shDestBase + 42,
               outputConversionFunc,
             );
           }
@@ -1720,6 +1783,7 @@ export class SplatBuffer {
       OPACITY: OFFSET_OPACITY,
       FRC0: OFFSET_FRC0,
       FRC9: OFFSET_FRC9,
+      FRC24: OFFSET_FRC24,
     } = UncompressedSplatArray.OFFSET;
 
     const compressPositionOffset = (
@@ -1821,6 +1885,11 @@ export class SplatBuffer {
             if (sphericalHarmonicsDegree >= 2) {
               for (let s = 0; s < 15; s++) {
                 shOut[s + 9] = targetSplat[OFFSET_FRC9 + s] || 0;
+              }
+              if (sphericalHarmonicsDegree >= 3) {
+                for (let s = 0; s < 21; s++) {
+                  shOut[s + 24] = targetSplat[OFFSET_FRC24 + s] || 0;
+                }
               }
             }
           }
@@ -1974,7 +2043,7 @@ export class SplatBuffer {
         const splat = splatArray.splats[i];
         for (
           let sc = UncompressedSplatArray.OFFSET.FRC0;
-          sc < UncompressedSplatArray.OFFSET.FRC23 && sc < splat.length;
+          sc < UncompressedSplatArray.OFFSET.FRC44 && sc < splat.length;
           sc++
         ) {
           if (
