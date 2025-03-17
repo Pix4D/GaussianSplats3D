@@ -274,6 +274,8 @@
         return 9;
       case 2:
         return 24;
+      case 3:
+        return 45;
     }
     return 0;
   };
@@ -420,7 +422,7 @@
       FRC42: 56,
       FRC43: 57,
       FRC44: 58,
-      };
+    };
 
     constructor(sphericalHarmonicsDegree = 0) {
       this.sphericalHarmonicsDegree = sphericalHarmonicsDegree;
@@ -905,7 +907,7 @@
         splatColorsArray[2],
         splatColorsArray[3],
       );
-    }  
+    }
     getSplatHarmonics(globalSplatIndex) {
       const sectionIndex = this.globalSplatIndexToSectionMap[globalSplatIndex];
       const section = this.sections[sectionIndex];
@@ -1392,15 +1394,11 @@
         );
       };
 
-
-
       const setOutput3 = (srcArray, destArray, destBase, conversionFunc) => {
         destArray[destBase] = conversionFunc(srcArray[0]);
         destArray[destBase + 1] = conversionFunc(srcArray[1]);
         destArray[destBase + 2] = conversionFunc(srcArray[2]);
       };
-
-
 
       return function(
         outSphericalHarmonicsArray,
@@ -1509,7 +1507,7 @@
           }
 
           const minShCoeff = this.minSphericalHarmonicsCoeff;
-          const maxShCoeff = this.maxSphericalHarmonicsCoeff;        
+          const maxShCoeff = this.maxSphericalHarmonicsCoeff;
           const scale = Math.max(Math.abs(minShCoeff), Math.abs(maxShCoeff));
 
           const toUintMax = (v, Max) => {
@@ -1607,7 +1605,7 @@
               set3FromArray(shOut34, dataView, 1, 33, this.compressionLevel);
               set3FromArray(shOut35, dataView, 1, 36, this.compressionLevel);
               set3FromArray(shOut36, dataView, 1, 39, this.compressionLevel);
-              set3FromArray(shOut37, dataView, 1, 42, this.compressionLevel);            
+              set3FromArray(shOut37, dataView, 1, 42, this.compressionLevel);
               toUintMaxArray(shOut31);
               toUintMaxArray(shOut32);
               toUintMaxArray(shOut33);
@@ -7818,7 +7816,7 @@
 
   class GLTFParser {
     constructor(degree) {
-      console.log(degree);
+
       this.degree = degree;
     }
 
@@ -8722,9 +8720,9 @@
                 `;
         }
 
-           // Adding the third harmonics variables
-           if (maxSphericalHarmonicsDegree >= 3) {
-            vertexShaderSource += `
+        // Adding the third harmonics variables
+        if (maxSphericalHarmonicsDegree >= 3) {
+          vertexShaderSource += `
                       vec3 sh9 = vec3(0.);
                       vec3 sh10 = vec3(0.);
                       vec3 sh11 = vec3(0.);
@@ -8733,7 +8731,7 @@
                       vec3 sh14 = vec3(0.);
                       vec3 sh15 = vec3(0.);
                   `;
-          }
+        }
 
         // Sample spherical harmonics textures with 1 degree worth of data for 1st degree calculations, and store in sh1, sh2, and sh3,
         // Calculate the harmonics result for the corresponding values.
@@ -8748,7 +8746,7 @@
 
                     sh1 = unpack111011s(d1);
                     sh2 = unpack111011s(d2);
-                    sh3 = unpack111011s(d2);
+                    sh3 = unpack111011s(d3);
 
                     float x = worldViewDir.x;
                     float y = worldViewDir.y;
@@ -8767,7 +8765,7 @@
         }
 
         // Proceed to sampling and rendering 2nd degree spherical harmonics
-              // Sample spherical harmonics textures with 2 degrees worth of data for 2nd degree calculations,
+        // Sample spherical harmonics textures with 2 degrees worth of data for 2nd degree calculations,
         // and store in sh4, sh5, sh6, sh7, and sh8
         if (maxSphericalHarmonicsDegree >= 2) {
           vertexShaderSource += `
@@ -8851,12 +8849,10 @@
 
       `;
 
-      return vertexShaderSource;
-
+        return vertexShaderSource;
       }
-
     }
-    
+
     static getVertexShaderFadeIn() {
       return `
             if (fadeInComplete == 0) {
@@ -10967,7 +10963,7 @@
             this.maxScreenSpaceSplatSize,
             this.splatScale,
             this.pointCloudModeEnabled,
-            this.minSphericalHarmonicsDegree,
+            this.sphericalHarmonicsDegree,
           );
         } else {
           this.material = SplatMaterial2D.build(
@@ -11596,7 +11592,11 @@
           paddedSHArrays.push(paddedSHArray3);
 
           // The harmonics are encoded into 45 different values for all the degrees (up to 3)
-          const totalSHDataPerSplat = 45;
+
+          let totalSHDataPerSplat = 0;
+          if(this.sphericalHarmonicsDegree == 1) totalSHDataPerSplat = 9;
+          if(this.sphericalHarmonicsDegree == 2) totalSHDataPerSplat = 21;
+          if(this.sphericalHarmonicsDegree == 3) totalSHDataPerSplat = 45;
 
           for (let c = 0; c < maxSplatCount; c++) {
             // For the first degree (3 harmonics)
@@ -11693,47 +11693,6 @@
           this.material.uniforms.sphericalHarmonicsTextureB.value =
             shTextureDegree3;
 
-          // for (let t = 0; t < 3; t++) {
-          //   const paddedSHArray = new SphericalHarmonicsArrayType(
-          //     paddedSHArraySize,
-          //   );
-          //   paddedSHArrays.push(paddedSHArray);
-          //   for (let c = 0; c < splatCount; c++) {
-          //     const srcBase = shComponentCount * c;
-          //     const destBase = paddedSHComponentCount * c;
-          //     if (shComponentCountPerChannel >= 3) {
-          //       for (let i = 0; i < 3; i++) {
-          //         paddedSHArray[destBase + i] = shData[srcBase + t * 3 + i];
-          //       }
-
-          //       if (shComponentCountPerChannel >= 8) {
-          //         for (let i = 0; i < 5; i++) {
-          //           paddedSHArray[destBase + 3 + i] =
-          //             shData[srcBase + 9 + t * 5 + i];
-          //         }
-          //       }
-
-          //       if (shComponentCountPerChannel >= 15) {
-          //         for (let i = 0; i < 7; i++) {
-          //           paddedSHArray[destBase + 3 + 5 + i] =
-          //             shData[srcBase + 9 + 15 + t * 7 + i];
-          //         }
-          //       }
-          //     }
-          //   }
-
-          //   const shTexture = new THREE.DataTexture(
-          //     paddedSHArray,
-          //     shTexSize.x,
-          //     shTexSize.y,
-          //     texelFormat,
-          //     shTextureType,
-          //   );
-          //   shTextures.push(shTexture);
-          //   shTexture.needsUpdate = true;
-          //   textureUniforms[t].value = shTexture;
-          // }
-
           this.material.uniforms.sphericalHarmonicsMultiTextureMode.value = 1;
           this.splatDataTextures['sphericalHarmonics'] = {
             componentCount: shComponentCount,
@@ -11749,18 +11708,13 @@
         }
         let buffer = this.scenes[0].splatBuffer;
 
-        console.log(
-          buffer.minSphericalHarmonicsCoeff,
-          buffer.maxSphericalHarmonicsCoeff - buffer.minSphericalHarmonicsCoeff,
-        );
-
         this.material.uniforms.harmonicsRangeMin.value =
           buffer.minSphericalHarmonicsCoeff;
         this.material.uniforms.harmonicsRange.value = Math.max(
           Math.abs(buffer.maxSphericalHarmonicsCoeff),
           Math.abs(buffer.minSphericalHarmonicsCoeff),
         );
-      
+
         this.material.uniforms.sphericalHarmonicsTextureSize.value.copy(
           shTexSize,
         );
@@ -12038,83 +11992,61 @@
         } else {
           const shComponentCountPerChannel =
             shTextureDesc.componentCountPerChannel;
-            const totalSHDataPerSplat = 45;
 
-            console.log(shData);
-    
-            for (let c = fromSplat; c <= toSplat; c++) {
-              // For the first degree (3 harmonics)
-              if (shComponentCountPerChannel >= 3) {
-                // 9 values are used for the first degree, 3 harmonics * 3 channels
-                let paddedSHArray1 = shTextureDesc.data[0];
-                for (let i = 0; i < 3; i++) {
-                  let index = totalSHDataPerSplat * c + 3 * i;
+
+          let totalSHDataPerSplat = 0;
+          console.log(this.sphericalHarmonicsDegree);
+          if(this.sphericalHarmonicsDegree == 1) totalSHDataPerSplat = 9;
+          if(this.sphericalHarmonicsDegree == 2) totalSHDataPerSplat = 21;
+          if(this.sphericalHarmonicsDegree == 3) totalSHDataPerSplat = 45;
+
+          for (let c = fromSplat; c <= toSplat; c++) {
+            // For the first degree (3 harmonics)
+            if (shComponentCountPerChannel >= 3) {
+              // 9 values are used for the first degree, 3 harmonics * 3 channels
+              let paddedSHArray1 = shTextureDesc.data[0];
+              for (let i = 0; i < 3; i++) {
+                let index = totalSHDataPerSplat * c + 3 * i;
+                let r = shData[index + 0];
+                let g = shData[index + 1];
+                let b = shData[index + 2];
+
+                paddedSHArray1[3 * c + i] = (r << 21) | (g << 11) | b;
+              }
+
+              // For the second degree (5 harmonics)
+              // The 8 is the sum of the harmonics (3 + 5)
+              if (shComponentCountPerChannel >= 8) {
+                // 15 values are used for the second degree, 5 harmonics * 3 channels
+                // The 9 is the offset where the second degree is being defined  in the 45 elements
+                let paddedSHArray2 = shTextureDesc.data[1];
+                for (let i = 0; i < 5; i++) {
+                  let index = totalSHDataPerSplat * c + 9 + 3 * i;
                   let r = shData[index + 0];
                   let g = shData[index + 1];
                   let b = shData[index + 2];
-    
-                  paddedSHArray1[3 * c + i] = (r << 21) | (g << 11) | b;
+
+                  paddedSHArray2[5 * c + i] = (r << 21) | (g << 11) | b;
                 }
-    
-                // updateTexture(
-                //   shTextureDesc.textures[0],
-                //   shTextureDesc.textures[0].width,
-                //   3,
-                //   paddedSHArray1,
-                //   shTextureDesc.paddedComponentCount
-                // );
-    
+
                 // For the second degree (5 harmonics)
-                // The 8 is the sum of the harmonics (3 + 5)
-                if (shComponentCountPerChannel >= 8) {
-                  // 15 values are used for the second degree, 5 harmonics * 3 channels
-                  // The 9 is the offset where the second degree is being defined  in the 45 elements
-                  let paddedSHArray2 = shTextureDesc.data[1];
-                  for (let i = 0; i < 5; i++) {
-                    let index = totalSHDataPerSplat * c + 9 + 3 * i;
+                // The 15 is the sum of the harmonics (3 + 5 + 7)
+                if (shComponentCountPerChannel >= 15) {
+                  // 21 values are used for the third degree, 7 harmonics * 3 channels
+                  // the 24 is the offset where the third degree is beind defined in the 45 elements
+                  let paddedSHArray3 = shTextureDesc.data[2];
+                  for (let i = 0; i < 7; i++) {
+                    let index = totalSHDataPerSplat * c + 24 + 3 * i;
                     let r = shData[index + 0];
                     let g = shData[index + 1];
                     let b = shData[index + 2];
-    
-                    paddedSHArray2[5 * c + i] = (r << 21) | (g << 11) | b;
-                  }
-    
-                  // updateTexture(
-                  //   shTextureDesc.textures[1],
-                  //   shTextureDesc.textures[1].width,
-                  //   3,
-                  //   paddedSHArray2,
-                  //   shTextureDesc.paddedComponentCount
-                  // );
-    
-                  // For the second degree (5 harmonics)
-                  // The 15 is the sum of the harmonics (3 + 5 + 7)
-                  if (shComponentCountPerChannel >= 15) {
-                    // 21 values are used for the third degree, 7 harmonics * 3 channels
-                    // the 24 is the offset where the third degree is beind defined in the 45 elements
-                    let paddedSHArray3 = shTextureDesc.data[2];
-                    for (let i = 0; i < 7; i++) {
-                      let index = totalSHDataPerSplat * c + 24 + 3 * i;
-                      let r = shData[index + 0];
-                      let g = shData[index + 1];
-                      let b = shData[index + 2];
-    
-                      paddedSHArray3[7 * c + i] = (r << 21) | (g << 11) | b;
-                    }
-    
-                    // updateTexture(
-                    //   shTextureDesc.textures[2],
-                    //   shTextureDesc.textures[2].width,
-                    //   3,
-                    //   paddedSHArray2,
-                    //   shTextureDesc.paddedComponentCount
-                    // );
+
+                    paddedSHArray3[7 * c + i] = (r << 21) | (g << 11) | b;
                   }
                 }
               }
             }
-    
-            console.log(shTextureDesc.textures);
+          }
         }
       }
 

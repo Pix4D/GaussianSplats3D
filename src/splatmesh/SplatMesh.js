@@ -433,7 +433,7 @@ export class SplatMesh extends THREE.Mesh {
           this.maxScreenSpaceSplatSize,
           this.splatScale,
           this.pointCloudModeEnabled,
-          this.minSphericalHarmonicsDegree,
+          this.sphericalHarmonicsDegree,
         );
       } else {
         this.material = SplatMaterial2D.build(
@@ -1062,7 +1062,11 @@ export class SplatMesh extends THREE.Mesh {
         paddedSHArrays.push(paddedSHArray3);
 
         // The harmonics are encoded into 45 different values for all the degrees (up to 3)
-        const totalSHDataPerSplat = 45;
+
+        let totalSHDataPerSplat = 0;
+        if (this.sphericalHarmonicsDegree == 1) totalSHDataPerSplat = 9;
+        if (this.sphericalHarmonicsDegree == 2) totalSHDataPerSplat = 21;
+        if (this.sphericalHarmonicsDegree == 3) totalSHDataPerSplat = 45;
 
         for (let c = 0; c < maxSplatCount; c++) {
           // For the first degree (3 harmonics)
@@ -1159,47 +1163,6 @@ export class SplatMesh extends THREE.Mesh {
         this.material.uniforms.sphericalHarmonicsTextureB.value =
           shTextureDegree3;
 
-        // for (let t = 0; t < 3; t++) {
-        //   const paddedSHArray = new SphericalHarmonicsArrayType(
-        //     paddedSHArraySize,
-        //   );
-        //   paddedSHArrays.push(paddedSHArray);
-        //   for (let c = 0; c < splatCount; c++) {
-        //     const srcBase = shComponentCount * c;
-        //     const destBase = paddedSHComponentCount * c;
-        //     if (shComponentCountPerChannel >= 3) {
-        //       for (let i = 0; i < 3; i++) {
-        //         paddedSHArray[destBase + i] = shData[srcBase + t * 3 + i];
-        //       }
-
-        //       if (shComponentCountPerChannel >= 8) {
-        //         for (let i = 0; i < 5; i++) {
-        //           paddedSHArray[destBase + 3 + i] =
-        //             shData[srcBase + 9 + t * 5 + i];
-        //         }
-        //       }
-
-        //       if (shComponentCountPerChannel >= 15) {
-        //         for (let i = 0; i < 7; i++) {
-        //           paddedSHArray[destBase + 3 + 5 + i] =
-        //             shData[srcBase + 9 + 15 + t * 7 + i];
-        //         }
-        //       }
-        //     }
-        //   }
-
-        //   const shTexture = new THREE.DataTexture(
-        //     paddedSHArray,
-        //     shTexSize.x,
-        //     shTexSize.y,
-        //     texelFormat,
-        //     shTextureType,
-        //   );
-        //   shTextures.push(shTexture);
-        //   shTexture.needsUpdate = true;
-        //   textureUniforms[t].value = shTexture;
-        // }
-
         this.material.uniforms.sphericalHarmonicsMultiTextureMode.value = 1;
         this.splatDataTextures['sphericalHarmonics'] = {
           componentCount: shComponentCount,
@@ -1214,11 +1177,6 @@ export class SplatMesh extends THREE.Mesh {
         };
       }
       let buffer = this.scenes[0].splatBuffer;
-
-      console.log(
-        buffer.minSphericalHarmonicsCoeff,
-        buffer.maxSphericalHarmonicsCoeff - buffer.minSphericalHarmonicsCoeff,
-      );
 
       this.material.uniforms.harmonicsRangeMin.value =
         buffer.minSphericalHarmonicsCoeff;
@@ -1504,9 +1462,12 @@ export class SplatMesh extends THREE.Mesh {
       } else {
         const shComponentCountPerChannel =
           shTextureDesc.componentCountPerChannel;
-        const totalSHDataPerSplat = 45;
 
-        console.log(shData);
+        let totalSHDataPerSplat = 0;
+        console.log(this.sphericalHarmonicsDegree);
+        if (this.sphericalHarmonicsDegree == 1) totalSHDataPerSplat = 9;
+        if (this.sphericalHarmonicsDegree == 2) totalSHDataPerSplat = 21;
+        if (this.sphericalHarmonicsDegree == 3) totalSHDataPerSplat = 45;
 
         for (let c = fromSplat; c <= toSplat; c++) {
           // For the first degree (3 harmonics)
@@ -1521,14 +1482,6 @@ export class SplatMesh extends THREE.Mesh {
 
               paddedSHArray1[3 * c + i] = (r << 21) | (g << 11) | b;
             }
-
-            // updateTexture(
-            //   shTextureDesc.textures[0],
-            //   shTextureDesc.textures[0].width,
-            //   3,
-            //   paddedSHArray1,
-            //   shTextureDesc.paddedComponentCount
-            // );
 
             // For the second degree (5 harmonics)
             // The 8 is the sum of the harmonics (3 + 5)
@@ -1545,14 +1498,6 @@ export class SplatMesh extends THREE.Mesh {
                 paddedSHArray2[5 * c + i] = (r << 21) | (g << 11) | b;
               }
 
-              // updateTexture(
-              //   shTextureDesc.textures[1],
-              //   shTextureDesc.textures[1].width,
-              //   3,
-              //   paddedSHArray2,
-              //   shTextureDesc.paddedComponentCount
-              // );
-
               // For the second degree (5 harmonics)
               // The 15 is the sum of the harmonics (3 + 5 + 7)
               if (shComponentCountPerChannel >= 15) {
@@ -1567,20 +1512,10 @@ export class SplatMesh extends THREE.Mesh {
 
                   paddedSHArray3[7 * c + i] = (r << 21) | (g << 11) | b;
                 }
-
-                // updateTexture(
-                //   shTextureDesc.textures[2],
-                //   shTextureDesc.textures[2].width,
-                //   3,
-                //   paddedSHArray2,
-                //   shTextureDesc.paddedComponentCount
-                // );
               }
             }
           }
         }
-
-        console.log(shTextureDesc.textures);
       }
     }
 

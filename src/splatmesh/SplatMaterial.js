@@ -250,7 +250,7 @@ export class SplatMaterial {
 
                     sh1 = unpack111011s(d1);
                     sh2 = unpack111011s(d2);
-                    sh3 = unpack111011s(d2);
+                    sh3 = unpack111011s(d3);
 
                     float x = worldViewDir.x;
                     float y = worldViewDir.y;

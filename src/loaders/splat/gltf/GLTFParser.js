@@ -3,7 +3,6 @@ import { UncompressedSplatArray } from '../../UncompressedSplatArray';
 import * as THREE from 'three';
 export class GLTFParser {
   constructor(degree) {
-    console.log(degree);
     this.degree = degree;
   }
 
