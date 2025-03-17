@@ -345,8 +345,7 @@ export class SplatMaterial {
 
       vertexShaderSource += `
 
-          vColor.rgb = 3. * harmonicsRange * harmonics;
-
+          vColor.rgb += harmonicsRange * harmonics;
           vColor.rgb = clamp(vColor.rgb, vec3(0.), vec3(1.));
 
       }
