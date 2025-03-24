@@ -18,30 +18,69 @@ export class UncompressedSplatArray {
     FDC1: 11,
     FDC2: 12,
     OPACITY: 13,
+
+    // 9 values, 3 floats for 3 harmonics (first degree)
     FRC0: 14,
     FRC1: 15,
     FRC2: 16,
+
     FRC3: 17,
     FRC4: 18,
     FRC5: 19,
+
     FRC6: 20,
     FRC7: 21,
     FRC8: 22,
+
+    // 15 values, 3 floats for 5 harmonics (second degree)
     FRC9: 23,
     FRC10: 24,
     FRC11: 25,
+
     FRC12: 26,
     FRC13: 27,
     FRC14: 28,
+
     FRC15: 29,
     FRC16: 30,
     FRC17: 31,
+
     FRC18: 32,
     FRC19: 33,
     FRC20: 34,
+
     FRC21: 35,
     FRC22: 36,
     FRC23: 37,
+
+    // 21 values 3 floats for 7 harmonics (third degree)
+    FRC24: 38,
+    FRC25: 39,
+    FRC26: 40,
+
+    FRC27: 41,
+    FRC28: 42,
+    FRC29: 43,
+
+    FRC30: 44,
+    FRC31: 45,
+    FRC32: 46,
+
+    FRC33: 47,
+    FRC34: 48,
+    FRC35: 49,
+
+    FRC36: 50,
+    FRC37: 51,
+    FRC38: 52,
+
+    FRC39: 53,
+    FRC40: 54,
+    FRC41: 55,
+
+    FRC42: 56,
+    FRC43: 57,
+    FRC44: 58,
   };
 
   constructor(sphericalHarmonicsDegree = 0) {

@@ -31,7 +31,7 @@ export class GLTFParser {
     const SH_C0 = 0.28209479177387814;
 
     return function(splatBuffers, row, shBuffers, shDegree) {
-      const newSplat = UncompressedSplatArray.createSplat(0);
+      const newSplat = UncompressedSplatArray.createSplat(shDegree);
 
       // center
       const positions = splatBuffers.POSITION;
@@ -111,6 +111,26 @@ export class GLTFParser {
               shBuffers.sh_band_2_3[row * 3 + i];
             newSplat[OFFSET[`FRC${21 + i}`]] =
               shBuffers.sh_band_2_4[row * 3 + i];
+          }
+        }
+
+        // third order sh bands
+        if (shDegree >= 3) {
+          for (let i = 0; i < 3; i++) {
+            newSplat[OFFSET[`FRC${24 + i}`]] =
+              shBuffers.sh_band_3_0[row * 3 + i];
+            newSplat[OFFSET[`FRC${27 + i}`]] =
+              shBuffers.sh_band_3_1[row * 3 + i];
+            newSplat[OFFSET[`FRC${30 + i}`]] =
+              shBuffers.sh_band_3_2[row * 3 + i];
+            newSplat[OFFSET[`FRC${33 + i}`]] =
+              shBuffers.sh_band_3_3[row * 3 + i];
+            newSplat[OFFSET[`FRC${36 + i}`]] =
+              shBuffers.sh_band_3_4[row * 3 + i];
+            newSplat[OFFSET[`FRC${39 + i}`]] =
+              shBuffers.sh_band_3_5[row * 3 + i];
+            newSplat[OFFSET[`FRC${42 + i}`]] =
+              shBuffers.sh_band_3_6[row * 3 + i];
           }
         }
       }

@@ -84,6 +84,7 @@ export class SplatMaterial3D {
     };
 
     const material = new THREE.ShaderMaterial({
+      glslVersion: THREE.GLSL3,
       uniforms: uniforms,
       vertexShader: vertexShaderSource,
       fragmentShader: fragmentShaderSource,
@@ -264,6 +265,7 @@ export class SplatMaterial3D {
             varying float vZ;
             varying float vSplatIndex;
             varying vec4 vVertex;
+            layout(location = 0) out vec4 colorData;
         `;
 
     fragmentShaderSource += `
@@ -293,12 +295,12 @@ export class SplatMaterial3D {
 
                   float index = float(vSplatIndex);
 
-                  gl_FragColor = vec4(index, 0., 0., 1.);
+                  colorData = vec4(index, 0., 0., 1.);
                   return;
 
                 }
 
-                gl_FragColor = vec4(color, opacity);
+                colorData = vec4(color, opacity);
             }
         `;
 
