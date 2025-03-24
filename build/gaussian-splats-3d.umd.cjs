@@ -8672,6 +8672,7 @@
                           SH_C3[4] * x * (4.0 * zz - xx - yy) * sh13 +
                           SH_C3[5] * z * (xx - yy) * sh14 +
                           SH_C3[6] * x * (xx - 3.0 * yy) * sh15;
+                      }
                     }
                     
                   `;
@@ -8683,7 +8684,7 @@
           vColor.rgb += harmonicsRange * harmonics;
           vColor.rgb = clamp(vColor.rgb, vec3(0.), vec3(1.));
 
-      }
+      
 
       `;
 
