@@ -338,23 +338,20 @@ export class SplatMaterial {
                           SH_C3[5] * z * (xx - yy) * sh14 +
                           SH_C3[6] * x * (xx - 3.0 * yy) * sh15;
                       }
-                    }
+                    
                     
                   `;
         }
       }
 
       vertexShaderSource += `
-
-          vColor.rgb += harmonicsRange * harmonics;
-          vColor.rgb = clamp(vColor.rgb, vec3(0.), vec3(1.));
-
-      
-
+            vColor.rgb += harmonicsRange * harmonics;
+            vColor.rgb = clamp(vColor.rgb, vec3(0.), vec3(1.));
+          }
       `;
-
-      return vertexShaderSource;
     }
+
+    return vertexShaderSource;
   }
 
   static getVertexShaderFadeIn() {
