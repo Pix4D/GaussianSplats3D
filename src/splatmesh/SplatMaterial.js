@@ -19,6 +19,9 @@ export class SplatMaterial {
         uniform highp usampler2D sphericalHarmonicsTextureG;
         uniform highp usampler2D sphericalHarmonicsTextureB;
 
+        uniform bool renderOnlyHarmonics;
+        uniform float harmonicsScale;
+
         uniform highp usampler2D sceneIndexesTexture;
         uniform vec2 sceneIndexesTextureSize;
         uniform int sceneCount;
@@ -345,7 +348,13 @@ export class SplatMaterial {
       }
 
       vertexShaderSource += `
-            vColor.rgb += harmonicsRange * harmonics;
+
+            if(renderOnlyHarmonics) {
+              vColor.rgb = harmonicsScale * harmonicsRange * harmonics;
+            } else {
+              vColor.rgb += harmonicsRange * harmonics;
+            }
+            
             vColor.rgb = clamp(vColor.rgb, vec3(0.), vec3(1.));
           }
       `;
@@ -443,6 +452,13 @@ export class SplatMaterial {
       harmonicsRange: {
         type: 'f',
         value: 0,
+      },
+      harmonicsScale: {
+        type: 'f',
+        value: 3,
+      },
+      renderOnlyHarmonics: {
+        value: false,
       },
       focal: {
         type: 'v2',
